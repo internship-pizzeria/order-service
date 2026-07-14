@@ -1,25 +1,18 @@
-package com.pizzeria.internship.order_service.entity;
+package com.pizzeria.internship.order_service.order;
 
-
+import com.pizzeria.internship.order_service.orderitem.OrderItem;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-
-enum Status{
-    NEW,
-    ACCEPTED,
-    REJECTED,
-    PAID
-}
-
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "Orders")
 public class Order {

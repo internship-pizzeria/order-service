@@ -1,6 +1,5 @@
-package com.pizzeria.internship.order_service.repository;
+package com.pizzeria.internship.order_service.order;
 
-import com.pizzeria.internship.order_service.entity.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

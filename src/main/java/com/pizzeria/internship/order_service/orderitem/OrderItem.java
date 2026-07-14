@@ -1,10 +1,14 @@
-package com.pizzeria.internship.order_service.entity;
+package com.pizzeria.internship.order_service.orderitem;
+
+import com.pizzeria.internship.order_service.order.Order;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name="order_item")
 public class OrderItem {
@@ -16,9 +20,8 @@ public class OrderItem {
     @JoinColumn(name = "order_id")
     private Order order;
 
-    @ManyToOne
-    @JoinColumn(name = "product_id")
-    private Product product;
+    @Column(nullable = false)
+    private Long productId;
 
     private Integer quantity;
 
