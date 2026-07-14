@@ -5,8 +5,11 @@ import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 
 enum Status{
@@ -21,8 +24,11 @@ enum Status{
 @Table(name = "Orders")
 public class Order {
     @Id
-    @GeneratedValue
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItem> items = new ArrayList<>();
 
     @Column(nullable = false)
     private String customer_name;
@@ -33,12 +39,16 @@ public class Order {
     @Column(nullable = false)
     private String delivery_address;
 
-    @Column(nullable = false)
     @Enumerated
-    private Enum<Status> status;
+    private Status status;
 
     @Column(nullable=false)
-    private Double total_price;
+    private BigDecimal total_price;
+
+    public void addItem(OrderItem item) {
+        items.add(item);
+        item.setOrder(this);
+    }
 
     @CreationTimestamp
     private LocalDateTime created_at;

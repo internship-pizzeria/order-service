@@ -2,22 +2,27 @@ package com.pizzeria.internship.order_service.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 @Data
 @Entity
 @Table(name="order_item")
 public class OrderItem {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private Long order_id;
+    @ManyToOne
+    @JoinColumn(name = "order_id")
+    private Order order;
 
-    @Column(nullable = false)
-    private Integer product_id;
+    @ManyToOne
+    @JoinColumn(name = "product_id")
+    private Product product;
 
-    @Column(nullable = false)
     private Integer quantity;
+
     private String historical_name;
-    private Double historical_price;
+
+    private BigDecimal historical_price;
 }
