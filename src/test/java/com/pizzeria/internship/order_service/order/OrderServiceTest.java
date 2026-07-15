@@ -3,10 +3,6 @@ package com.pizzeria.internship.order_service.order;
 import com.pizzeria.internship.order_service.orderitem.OrderItem;
 import com.pizzeria.internship.order_service.product.ProductClient;
 import com.pizzeria.internship.order_service.product.ProductDto;
-import com.pizzeria.internship.order_service.order.Order;
-import com.pizzeria.internship.order_service.order.OrderRepository;
-import com.pizzeria.internship.order_service.order.OrderRequestDto;
-import com.pizzeria.internship.order_service.order.OrderService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,13 +34,13 @@ class OrderServiceTest {
 
     @BeforeEach
     void setUp() {
-        margherita = new ProductDto(1L,"Margherita", new BigDecimal("29.99"));
-        pepperoni = new ProductDto(2L,"Pepperoni", new BigDecimal("34.99"));
+        margherita = new ProductDto(1L, "Margherita", new BigDecimal("29.99"));
+        pepperoni = new ProductDto(2L, "Pepperoni", new BigDecimal("34.99"));
     }
 
     @Test
     void createOrder_shouldSetOrderFields() {
-        OrderRequestDto request = buildRequest(List.of(1L), new BigDecimal("29.99"));
+        OrderRequestDto request = buildRequest(List.of(1L));
         when(productClient.getProductById(1L)).thenReturn(margherita);
         when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -58,20 +54,20 @@ class OrderServiceTest {
 
     @Test
     void createOrder_shouldCreateOneItemForSingleProduct() {
-        OrderRequestDto request = buildRequest(List.of(1L), new BigDecimal("29.99"));
+        OrderRequestDto request = buildRequest(List.of(1L));
         when(productClient.getProductById(1L)).thenReturn(margherita);
         when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
 
         Order result = orderService.createOrder(request);
 
         assertEquals(1, result.getItems().size());
-        assertEquals(1L, result.getItems().get(0).getProductId());
-        assertEquals(1, result.getItems().get(0).getQuantity());
+        assertEquals(1L, result.getItems().getFirst().getProductId());
+        assertEquals(1, result.getItems().getFirst().getQuantity());
     }
 
     @Test
     void createOrder_shouldCreateMultipleItemsForDifferentProducts() {
-        OrderRequestDto request = buildRequest(List.of(1L, 2L), new BigDecimal("64.98"));
+        OrderRequestDto request = buildRequest(List.of(1L, 2L));
         when(productClient.getProductById(1L)).thenReturn(margherita);
         when(productClient.getProductById(2L)).thenReturn(pepperoni);
         when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -79,11 +75,12 @@ class OrderServiceTest {
         Order result = orderService.createOrder(request);
 
         assertEquals(2, result.getItems().size());
+        assertEquals(new BigDecimal("64.98"), result.getTotal_price());
     }
 
     @Test
     void createOrder_shouldIncrementQuantityForDuplicateProducts() {
-        OrderRequestDto request = buildRequest(List.of(1L, 2L, 1L), new BigDecimal("94.97"));
+        OrderRequestDto request = buildRequest(List.of(1L, 2L, 1L));
         when(productClient.getProductById(1L)).thenReturn(margherita);
         when(productClient.getProductById(2L)).thenReturn(pepperoni);
         when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -101,24 +98,38 @@ class OrderServiceTest {
                 .filter(item -> item.getProductId().equals(2L))
                 .findFirst().orElseThrow();
         assertEquals(1, pepperoniItem.getQuantity());
+
+        assertEquals(new BigDecimal("94.97"), result.getTotal_price());
+    }
+
+    @Test
+    void createOrder_shouldCalculateTotalPriceAutomatically() {
+        OrderRequestDto request = buildRequest(List.of(1L, 2L, 1L, 2L));
+        when(productClient.getProductById(1L)).thenReturn(margherita);
+        when(productClient.getProductById(2L)).thenReturn(pepperoni);
+        when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Order result = orderService.createOrder(request);
+
+        assertEquals(new BigDecimal("129.96"), result.getTotal_price());
     }
 
     @Test
     void createOrder_shouldSaveHistoricalData() {
-        OrderRequestDto request = buildRequest(List.of(1L), new BigDecimal("29.99"));
+        OrderRequestDto request = buildRequest(List.of(1L));
         when(productClient.getProductById(1L)).thenReturn(margherita);
         when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
 
         Order result = orderService.createOrder(request);
 
-        OrderItem item = result.getItems().get(0);
+        OrderItem item = result.getItems().getFirst();
         assertEquals("Margherita", item.getHistorical_name());
         assertEquals(new BigDecimal("29.99"), item.getHistorical_price());
     }
 
     @Test
     void createOrder_shouldCallProductClientForDistinctProducts() {
-        OrderRequestDto request = buildRequest(List.of(1L, 2L, 1L), new BigDecimal("94.97"));
+        OrderRequestDto request = buildRequest(List.of(1L, 2L, 1L));
         when(productClient.getProductById(1L)).thenReturn(margherita);
         when(productClient.getProductById(2L)).thenReturn(pepperoni);
         when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -131,7 +142,7 @@ class OrderServiceTest {
 
     @Test
     void createOrder_shouldCallRepositorySave() {
-        OrderRequestDto request = buildRequest(List.of(1L), new BigDecimal("29.99"));
+        OrderRequestDto request = buildRequest(List.of(1L));
         when(productClient.getProductById(1L)).thenReturn(margherita);
         when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -140,7 +151,7 @@ class OrderServiceTest {
         verify(orderRepository, times(1)).save(any(Order.class));
     }
 
-    private OrderRequestDto buildRequest(List<Long> productIds, BigDecimal totalPrice) {
-        return new OrderRequestDto("name", "123456789", "address", productIds, totalPrice);
+    private OrderRequestDto buildRequest(List<Long> productIds) {
+        return new OrderRequestDto("name", "123456789", "address", productIds);
     }
 }

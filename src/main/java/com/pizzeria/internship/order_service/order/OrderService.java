@@ -6,6 +6,7 @@ import com.pizzeria.internship.order_service.product.ProductDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 @Service
@@ -20,7 +21,7 @@ public class OrderService {
         order.setCustomer_name(request.customerName());
         order.setPhone_number(request.phoneNumber());
         order.setDelivery_address(request.deliveryAddress());
-        order.setTotal_price(request.totalPrice());
+        order.setTotal_price(BigDecimal.ZERO);
 
         for (Long productID : request.productIds()) {
 
@@ -30,6 +31,7 @@ public class OrderService {
 
             if (existingItem.isPresent()) {
                 existingItem.get().setQuantity(existingItem.get().getQuantity() + 1);
+                order.setTotal_price(order.getTotal_price().add(existingItem.get().getHistorical_price()));
             } else {
                 ProductDto product = productClient.getProductById(productID);
                 OrderItem orderItem = new OrderItem();
@@ -39,6 +41,7 @@ public class OrderService {
                 orderItem.setHistorical_name(product.name());
                 orderItem.setHistorical_price(product.price());
                 order.addItem(orderItem);
+                order.setTotal_price(order.getTotal_price().add(product.price()));
             }
         }
         return orderRepository.save(order);
