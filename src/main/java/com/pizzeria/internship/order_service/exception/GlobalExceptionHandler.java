@@ -6,13 +6,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
-import org.springframework.http.ResponseEntity;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import java.time.ZonedDateTime;
-import java.time.ZoneOffset;
-import java.util.Map;
+import java.net.URI;
+import java.util.List;
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
@@ -20,25 +23,72 @@ class GlobalExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(ProductNotFoundException.class)
-    ResponseEntity<Map<String, Object>> handleProductNotFound(ProductNotFoundException e) {
+    ProblemDetail handleProductNotFound(ProductNotFoundException e) {
         log.warn(e.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
-                "timestamp", ZonedDateTime.now(ZoneOffset.UTC),
-                "status", 404,
-                "error", "Not Found",
-                "message", e.getMessage()
-        ));
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.NOT_FOUND, e.getMessage());
+        problem.setTitle("Not Found");
+        problem.setType(URI.create("https://api.pizzeria.com/errors/product-not-found"));
+        return problem;
     }
 
     @ExceptionHandler(InvalidOrderException.class)
-    ResponseEntity<Map<String, Object>> handleInvalidOrder(InvalidOrderException e) {
+    ProblemDetail handleInvalidOrder(InvalidOrderException e) {
         log.warn(e.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                "timestamp", ZonedDateTime.now(ZoneOffset.UTC),
-                "status", 400,
-                "error", "Bad Request",
-                "message", e.getMessage()
-        ));
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST, e.getMessage());
+        problem.setTitle("Bad Request");
+        problem.setType(URI.create("https://api.pizzeria.com/errors/invalid-order"));
+        return problem;
+    }
+
+    @ExceptionHandler(HttpServerErrorException.class)
+    ProblemDetail handleHttpServerError(HttpServerErrorException e) {
+        log.error("Downstream service error: {} {}", e.getStatusCode(), e.getResponseBodyAsString(), e);
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_GATEWAY, "Downstream service is unavailable");
+        problem.setTitle("Bad Gateway");
+        problem.setType(URI.create("https://api.pizzeria.com/errors/downstream-error"));
+        return problem;
+    }
+
+    @ExceptionHandler(ResourceAccessException.class)
+    ProblemDetail handleResourceAccess(ResourceAccessException e) {
+        log.error("Failed to connect to downstream service", e);
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.SERVICE_UNAVAILABLE, "Service temporarily unavailable");
+        problem.setTitle("Service Unavailable");
+        problem.setType(URI.create("https://api.pizzeria.com/errors/service-unavailable"));
+        return problem;
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    ProblemDetail handleValidation(MethodArgumentNotValidException e) {
+        List<String> errors = e.getBindingResult().getFieldErrors().stream()
+                .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())
+                .toList();
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST, "Validation failed");
+        problem.setTitle("Bad Request");
+        problem.setType(URI.create("https://api.pizzeria.com/errors/validation"));
+        problem.setProperty("errors", errors);
+        return problem;
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    ProblemDetail handleNoResourceFound(NoResourceFoundException e) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.NOT_FOUND, "The requested resource was not found");
+        problem.setTitle("Not Found");
+        return problem;
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    ProblemDetail handleMethodNotSupported(HttpRequestMethodNotSupportedException e) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.METHOD_NOT_ALLOWED, "Method " + e.getMethod() + " is not supported");
+        problem.setTitle("Method Not Allowed");
+        return problem;
     }
 
     @ExceptionHandler(Exception.class)
@@ -47,6 +97,7 @@ class GlobalExceptionHandler {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(
                 HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
         problem.setTitle("Internal Server Error");
+        problem.setType(URI.create("https://api.pizzeria.com/errors/internal-error"));
         return problem;
     }
 }

@@ -1,5 +1,6 @@
 package com.pizzeria.internship.order_service.order;
 
+import com.pizzeria.internship.order_service.product.Product;
 import com.pizzeria.internship.order_service.product.ProductClient;
 import com.pizzeria.internship.order_service.product.ProductDto;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,8 +31,8 @@ class OrderServiceTest {
     @InjectMocks
     private OrderService orderService;
 
-    private ProductDto margherita;
-    private ProductDto pepperoni;
+    private Product margherita;
+    private Product pepperoni;
 
     private final BigDecimal TEST_MARGHERITA_PRICE = BigDecimal.valueOf(29.99);
     private final BigDecimal TEST_PEPPERONI_PRICE = BigDecimal.valueOf(34.99);
@@ -42,8 +43,8 @@ class OrderServiceTest {
 
     @BeforeEach
     void setUp() {
-        margherita = new ProductDto(1L, "Margherita", "Classic pizza", TEST_MARGHERITA_PRICE, TEST_LOCATION_ID);
-        pepperoni = new ProductDto(2L, "Pepperoni", "Spicy pizza", TEST_PEPPERONI_PRICE, TEST_LOCATION_ID);
+        margherita = Product.fromDto(new ProductDto(1L, "Margherita", "Classic pizza", TEST_MARGHERITA_PRICE, TEST_LOCATION_ID));
+        pepperoni = Product.fromDto(new ProductDto(2L, "Pepperoni", "Spicy pizza", TEST_PEPPERONI_PRICE, TEST_LOCATION_ID));
     }
 
     @Test

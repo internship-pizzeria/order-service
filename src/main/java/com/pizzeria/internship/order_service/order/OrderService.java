@@ -1,7 +1,7 @@
 package com.pizzeria.internship.order_service.order;
 
+import com.pizzeria.internship.order_service.product.Product;
 import com.pizzeria.internship.order_service.product.ProductClient;
-import com.pizzeria.internship.order_service.product.ProductDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,13 +63,13 @@ class OrderService {
     }
 
     private void addItem(Order order, Long productId, int quantity, Long locationId) {
-        ProductDto product = productClient.getProductById(productId, locationId);
+        Product product = productClient.getProductById(productId, locationId);
         OrderItem item = OrderItem.builder()
-                .productId(product.id())
+                .productId(product.getId())
                 .order(order)
                 .quantity(quantity)
-                .historicalName(product.name())
-                .historicalPrice(product.price())
+                .historicalName(product.getName())
+                .historicalPrice(product.getPrice())
                 .build();
         order.addItem(item);
     }
