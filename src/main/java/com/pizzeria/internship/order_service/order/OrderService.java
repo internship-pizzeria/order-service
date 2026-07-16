@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 @Service
 @RequiredArgsConstructor
 class OrderService {
-
+    private static final int MIN_PIZZAS_PER_ORDER = 1;
     private static final int MAX_PIZZAS_PER_ORDER = 50;
     private static final String PHONE_NUMBER_REGEX = "^[+\\d\\s\\-()]+$";
 
@@ -42,6 +42,10 @@ class OrderService {
         int totalQuantity = items.stream()
                 .mapToInt(OrderItemRequestDto::quantity)
                 .sum();
+        if  (totalQuantity<MIN_PIZZAS_PER_ORDER){
+            throw new InvalidOrderException(
+                    "You cannot order less than" + MIN_PIZZAS_PER_ORDER + "pizzas per order");
+        }
         if (totalQuantity > MAX_PIZZAS_PER_ORDER) {
             throw new InvalidOrderException(
                     "Total quantity exceeds limit of " + MAX_PIZZAS_PER_ORDER + " pizzas per order");

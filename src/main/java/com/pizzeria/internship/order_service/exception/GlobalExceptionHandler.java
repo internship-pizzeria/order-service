@@ -5,6 +5,7 @@ import com.pizzeria.internship.order_service.product.ProductNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -37,5 +38,14 @@ class GlobalExceptionHandler {
                 "error", "Bad Request",
                 "message", e.getMessage()
         ));
+    }
+
+    @ExceptionHandler(Exception.class)
+    ProblemDetail handleUnexpectedException(Exception e) {
+        log.error("Unexpected exception", e);
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
+        problem.setTitle("Internal Server Error");
+        return problem;
     }
 }

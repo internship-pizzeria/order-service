@@ -16,13 +16,15 @@ public class ProductClient {
     private static final Logger log = LoggerFactory.getLogger(ProductClient.class);
     private static final int MAX_RETRIES = 3;
     private static final long RETRY_DELAY_MS = 1000;
-
+    private static final int CONNECT_TIMEOUT_MS = 5000;
+    private static final int READ_TIMEOUT_MS = 5000;
     private final RestClient restClient;
+
 
     public ProductClient(@Value("${catalog-service.url}") String baseUrl) {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(5000);
-        factory.setReadTimeout(5000);
+        factory.setConnectTimeout(CONNECT_TIMEOUT_MS);
+        factory.setReadTimeout(READ_TIMEOUT_MS);
 
         this.restClient = RestClient.builder()
                 .baseUrl(baseUrl)

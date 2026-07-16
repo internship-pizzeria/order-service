@@ -17,7 +17,6 @@ import java.util.UUID;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "Orders")
-
 class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
