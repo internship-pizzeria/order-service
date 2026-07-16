@@ -1,5 +1,6 @@
 package com.pizzeria.internship.order_service.order;
 
+import com.pizzeria.internship.order_service.product.Product;
 import com.pizzeria.internship.order_service.product.ProductClient;
 import com.pizzeria.internship.order_service.product.ProductDto;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,8 +31,8 @@ class OrderServiceTest {
     @InjectMocks
     private OrderService orderService;
 
-    private ProductDto margherita;
-    private ProductDto pepperoni;
+    private Product margherita;
+    private Product pepperoni;
 
     private final BigDecimal TEST_MARGHERITA_PRICE = BigDecimal.valueOf(29.99);
     private final BigDecimal TEST_PEPPERONI_PRICE = BigDecimal.valueOf(34.99);
@@ -42,8 +43,8 @@ class OrderServiceTest {
 
     @BeforeEach
     void setUp() {
-        margherita = new ProductDto(1L, "Margherita", "Classic pizza", TEST_MARGHERITA_PRICE, TEST_LOCATION_ID);
-        pepperoni = new ProductDto(2L, "Pepperoni", "Spicy pizza", TEST_PEPPERONI_PRICE, TEST_LOCATION_ID);
+        margherita = Product.fromDto(new ProductDto(1L, "Margherita", "Classic pizza", TEST_MARGHERITA_PRICE, TEST_LOCATION_ID));
+        pepperoni = Product.fromDto(new ProductDto(2L, "Pepperoni", "Spicy pizza", TEST_PEPPERONI_PRICE, TEST_LOCATION_ID));
     }
 
     @Test
@@ -58,7 +59,7 @@ class OrderServiceTest {
 
         // Then
         assertEquals(TEST_NAME, result.getCustomerName());
-        assertEquals(TEST_PHONE_NUMBER, result.getPhoneNumber());
+        assertEquals("48123456789", result.getPhoneNumber());
         assertEquals(TEST_ADDRESS, result.getDeliveryAddress());
         assertEquals(TEST_LOCATION_ID, result.getLocationId());
         assertEquals(TEST_MARGHERITA_PRICE, result.getTotalPrice());
@@ -198,7 +199,7 @@ class OrderServiceTest {
     @Test
     void createOrder_shouldAcceptValidPhoneNumberFormats() {
         // Given
-        OrderRequestDto request = buildRequestWithPhone("+48 123 456 789", item(1L, 1));
+        OrderRequestDto request = buildRequestWithPhone(TEST_PHONE_NUMBER, item(1L, 1));
         when(productClient.getProductById(eq(1L), eq(TEST_LOCATION_ID))).thenReturn(margherita);
         when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -206,7 +207,7 @@ class OrderServiceTest {
         Order result = orderService.createOrder(request);
 
         // Then
-        assertEquals("+48 123 456 789", result.getPhoneNumber());
+        assertEquals("48123456789", result.getPhoneNumber());
     }
 
     @Test
