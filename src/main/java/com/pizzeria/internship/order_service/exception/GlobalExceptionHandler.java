@@ -10,7 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.ZoneOffset;
 import java.util.Map;
 
 @RestControllerAdvice
@@ -22,7 +23,7 @@ class GlobalExceptionHandler {
     ResponseEntity<Map<String, Object>> handleProductNotFound(ProductNotFoundException e) {
         log.warn(e.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
-                "timestamp", LocalDateTime.now(),
+                "timestamp", ZonedDateTime.now(ZoneOffset.UTC),
                 "status", 404,
                 "error", "Not Found",
                 "message", e.getMessage()
@@ -33,7 +34,7 @@ class GlobalExceptionHandler {
     ResponseEntity<Map<String, Object>> handleInvalidOrder(InvalidOrderException e) {
         log.warn(e.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                "timestamp", LocalDateTime.now(),
+                "timestamp", ZonedDateTime.now(ZoneOffset.UTC),
                 "status", 400,
                 "error", "Bad Request",
                 "message", e.getMessage()
