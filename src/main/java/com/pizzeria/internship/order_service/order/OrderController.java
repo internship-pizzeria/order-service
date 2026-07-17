@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/orders")
 @RequiredArgsConstructor
@@ -13,7 +15,12 @@ class OrderController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    Order createOrder(@RequestBody OrderRequestDto orderRequest){
+    Order createOrder(@RequestBody OrderRequestDto orderRequest) {
         return orderService.createOrder(orderRequest);
+    }
+
+    @GetMapping("/phone/{phoneNumber}")
+    List<OrderResponseDto> getOrdersByPhone(@PathVariable String phoneNumber) {
+        return orderService.getOrdersByPhoneNumber(phoneNumber);
     }
 }

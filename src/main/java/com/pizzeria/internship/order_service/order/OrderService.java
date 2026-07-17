@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -14,6 +15,7 @@ class OrderService {
     private static final int MIN_PIZZAS_PER_ORDER = 1;
     private static final int MAX_PIZZAS_PER_ORDER = 50;
     private static final String PHONE_NUMBER_REGEX = "^[+\\d\\s\\-()]+$";
+    private static final List<Status> ACTIVE_STATUSES = List.of(Status.NEW, Status.ACCEPTED, Status.IN_PROGRESS);
 
     private final OrderRepository orderRepository;
     private final ProductClient productClient;
@@ -25,6 +27,16 @@ class OrderService {
         request.items().forEach(item -> addItem(order, item.productId(), item.quantity(), request.locationId()));
         order.calculateTotalPrice();
         return orderRepository.save(order);
+    }
+
+    List<OrderResponseDto> getOrdersByPhoneNumber(String phoneNumber) {
+        List<Order> orders = orderRepository.findByPhoneNumberAndStatusIn(normalizePhoneNumber(phoneNumber), ACTIVE_STATUSES);
+        if (orders.isEmpty()) {
+            throw new OrderNotFoundException(phoneNumber);
+        }
+        return orders.stream()
+                .map(OrderResponseDto::fromOrder)
+                .toList();
     }
 
     private void validateRequest(OrderRequestDto request) {
@@ -55,11 +67,16 @@ class OrderService {
     private Order buildOrderFromRequest(OrderRequestDto request) {
         return Order.builder()
                 .customerName(request.customerName())
-                .phoneNumber(request.phoneNumber())
+                .phoneNumber(normalizePhoneNumber(request.phoneNumber()))
                 .deliveryAddress(request.deliveryAddress())
                 .locationId(request.locationId())
+                .status(Status.NEW)
                 .totalPrice(BigDecimal.ZERO)
                 .build();
+    }
+
+    private String normalizePhoneNumber(String phoneNumber) {
+        return phoneNumber.replaceAll("[^\\d]", "");
     }
 
     private void addItem(Order order, Long productId, int quantity, Long locationId) {
