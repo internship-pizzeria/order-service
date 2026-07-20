@@ -3,12 +3,15 @@ package com.pizzeria.internship.order_service.order;
 import com.pizzeria.internship.order_service.product.Product;
 import com.pizzeria.internship.order_service.product.ProductClient;
 import com.pizzeria.internship.order_service.product.ProductDto;
+import com.pizzeria.internship.order_service.user.UserIdAuthenticationToken;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -45,6 +48,12 @@ class OrderServiceTest {
     void setUp() {
         margherita = Product.fromDto(new ProductDto(1L, "Margherita", "Classic pizza", TEST_MARGHERITA_PRICE, TEST_LOCATION_ID));
         pepperoni = Product.fromDto(new ProductDto(2L, "Pepperoni", "Spicy pizza", TEST_PEPPERONI_PRICE, TEST_LOCATION_ID));
+        SecurityContextHolder.getContext().setAuthentication(new UserIdAuthenticationToken(TEST_LOCATION_ID, TEST_LOCATION_ID));
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
     }
 
     @Test

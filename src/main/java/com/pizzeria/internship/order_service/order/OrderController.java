@@ -19,6 +19,11 @@ class OrderController {
         return orderService.createOrder(orderRequest);
     }
 
+    @GetMapping
+    List<OrderResponseDto> getOrdersByLocation() {
+        return orderService.getOrdersByLocation();
+    }
+
     @GetMapping("/phone/{phoneNumber}")
     List<OrderResponseDto> getOrdersByPhone(@PathVariable String phoneNumber) {
         return orderService.getOrdersByPhoneNumber(phoneNumber);
