@@ -38,10 +38,10 @@ public class ProductClient {
             maxAttempts = 3,
             backoff = @Backoff(delay = 3000)
     )
-    public Product getProductById(Long productId, Long locationId) {
+    public Product getProductById(Long productId) {
         try {
             ProductDto dto = restClient.get()
-                    .uri("/api/v1/products/{id}?locationId={locationId}", productId, locationId)
+                    .uri("/api/v1/products/{id}", productId)
                     .retrieve()
                     .body(ProductDto.class);
             return Product.fromDto(dto);
@@ -51,13 +51,13 @@ public class ProductClient {
     }
 
     @Recover
-    Product recover(HttpServerErrorException e, Long productId, Long locationId) {
+    Product recover(HttpServerErrorException e, Long productId) {
         log.error("Failed to fetch product {} after retries", productId, e);
         throw e;
     }
 
     @Recover
-    Product recover(ResourceAccessException e, Long productId, Long locationId) {
+    Product recover(ResourceAccessException e, Long productId) {
         log.error("Failed to fetch product {} after retries", productId, e);
         throw e;
     }

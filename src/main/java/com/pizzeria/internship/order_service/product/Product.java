@@ -17,13 +17,11 @@ public final class Product {
     private final String name;
     private final String description;
     private final BigDecimal price;
-    private final Long locationId;
-
 
 
     public static Product fromDto(ProductDto dto) {
         Objects.requireNonNull(dto, "ProductDto must not be null");
-        return new Product(dto.id(), dto.name(), dto.description(), dto.price(), dto.locationId());
+        return new Product(dto.id(), dto.name(), dto.description(), dto.price());
     }
 
 }
