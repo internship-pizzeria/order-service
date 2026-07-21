@@ -16,7 +16,7 @@ class StatusTransition {
         TRANSITIONS.put(Status.READY, EnumSet.of(Status.PAID, Status.IN_DELIVERY));
         TRANSITIONS.put(Status.IN_DELIVERY, EnumSet.of(Status.DELIVERED));
         TRANSITIONS.put(Status.REJECTED, EnumSet.noneOf(Status.class));
-        TRANSITIONS.put(Status.PAID, EnumSet.noneOf(Status.class));
+        TRANSITIONS.put(Status.PAID, EnumSet.of(Status.IN_PROGRESS, Status.IN_DELIVERY));
         TRANSITIONS.put(Status.DELIVERED, EnumSet.noneOf(Status.class));
     }
 
