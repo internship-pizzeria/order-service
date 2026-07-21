@@ -75,12 +75,12 @@ class OrderService {
         }
     }
 
-    private Order buildOrderFromRequest(OrderRequestDto request, Long locationId) {
+    private Order buildOrderFromRequest(OrderRequestDto request) {
         return Order.builder()
                 .customerName(request.customerName())
                 .phoneNumber(normalizePhoneNumber(request.phoneNumber()))
                 .deliveryAddress(request.deliveryAddress())
-                .locationId(locationId)
+                .locationId(request.locationId())
                 .status(Status.NEW)
                 .totalPrice(BigDecimal.ZERO)
                 .build();
