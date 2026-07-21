@@ -44,12 +44,12 @@ class OrderServiceTest {
     private final String TEST_ADDRESS = "address";
     private final String TEST_NAME = "name";
     private final Long TEST_LOCATION_ID = 10L;
-    private final Long TEST_USER_ID = 1L;
 
     @BeforeEach
     void setUp() {
         margherita = Product.fromDto(new ProductDto(1L, "Margherita", "Classic pizza", TEST_MARGHERITA_PRICE));
         pepperoni = Product.fromDto(new ProductDto(2L, "Pepperoni", "Spicy pizza", TEST_PEPPERONI_PRICE));
+        Long TEST_USER_ID = 1L;
         UserIdAuthenticationToken token = new UserIdAuthenticationToken(TEST_USER_ID, TEST_LOCATION_ID);
         SecurityContextHolder.getContext().setAuthentication(token);
     }

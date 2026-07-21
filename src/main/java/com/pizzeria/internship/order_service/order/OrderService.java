@@ -23,7 +23,6 @@ class OrderService {
 
     @Transactional
     OrderResponseDto createOrder(OrderRequestDto request) {
-        Long locationId = request.locationId();
         validateRequest(request);
         Order order = buildOrderFromRequest(request);
         request.items().forEach(item -> addItem(order, item.productId(), item.quantity()));
