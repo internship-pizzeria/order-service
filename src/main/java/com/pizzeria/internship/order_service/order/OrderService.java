@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -16,38 +17,72 @@ class OrderService {
     private static final int MIN_PIZZAS_PER_ORDER = 1;
     private static final int MAX_PIZZAS_PER_ORDER = 50;
     private static final String PHONE_NUMBER_REGEX = "^[+\\d\\s\\-()]+$";
-    private static final List<Status> ACTIVE_STATUSES = List.of(Status.NEW, Status.ACCEPTED, Status.IN_PROGRESS);
 
     private final OrderRepository orderRepository;
     private final ProductClient productClient;
 
     @Transactional
-    Order createOrder(OrderRequestDto request) {
-        Long locationId = request.locationId();
+    OrderResponseDto createOrder(OrderRequestDto request) {
         validateRequest(request);
         Order order = buildOrderFromRequest(request);
         request.items().forEach(item -> addItem(order, item.productId(), item.quantity()));
         order.calculateTotalPrice();
-        return orderRepository.save(order);
+        orderRepository.save(order);
+        return OrderResponseDto.fromOrder(order);
     }
 
-    List<OrderResponseDto> getOrdersByPhoneNumber(String phoneNumber) {
-        List<Order> orders = orderRepository.findByPhoneNumberAndStatusIn(
-                normalizePhoneNumber(phoneNumber), ACTIVE_STATUSES);
-        if (orders.isEmpty()) {
-            throw new OrderNotFoundException(phoneNumber);
+    OrderResponseDto getOrderStatusById(UUID orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+        return OrderResponseDto.fromOrder(order);
+    }
+
+    List<OrderResponseDto> getOrdersByLocation() {
+        return getOrdersByLocation(null);
+    }
+
+    List<OrderResponseDto> getOrdersByLocation(Status statusFilter) {
+        Long locationId = UserContext.getLocationId();
+        List<Order> orders;
+        if (statusFilter != null) {
+            orders = orderRepository.findByLocationIdAndStatusIn(locationId, List.of(statusFilter));
+        } else {
+            orders = orderRepository.findByLocationId(locationId);
         }
         return orders.stream()
                 .map(OrderResponseDto::fromOrder)
                 .toList();
     }
 
-    List<OrderResponseDto> getOrdersByLocation() {
+    @Transactional
+    OrderResponseDto updateOrderStatus(UUID orderId, UpdateStatusRequestDto request) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+
         Long locationId = UserContext.getLocationId();
-        List<Order> orders = orderRepository.findByLocationId(locationId);
-        return orders.stream()
-                .map(OrderResponseDto::fromOrder)
-                .toList();
+        if (!locationId.equals(order.getLocationId())) {
+            throw new OrderAccessDeniedException(orderId);
+        }
+
+        Status targetStatus;
+        try {
+            targetStatus = Status.valueOf(request.status().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new InvalidOrderException("Invalid status value: " + request.status());
+        }
+
+        StatusTransition.validateTransition(order.getStatus(), targetStatus);
+        orderRepository.updateStatus(orderId, targetStatus);
+        return new OrderResponseDto(
+                orderId,
+                targetStatus.name(),
+                order.getTotalPrice(),
+                order.getDeliveryAddress(),
+                order.getCreatedAt(),
+                order.getItems().stream()
+                        .map(OrderItemResponseDto::fromOrderItem)
+                        .toList()
+        );
     }
 
     private void validateRequest(OrderRequestDto request) {

@@ -1,6 +1,9 @@
 package com.pizzeria.internship.order_service.exception;
 
 import com.pizzeria.internship.order_service.order.InvalidOrderException;
+import com.pizzeria.internship.order_service.order.InvalidStatusTransitionException;
+import com.pizzeria.internship.order_service.order.OrderAccessDeniedException;
+import com.pizzeria.internship.order_service.order.OrderNotFoundException;
 import com.pizzeria.internship.order_service.product.ProductNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,6 +91,36 @@ class GlobalExceptionHandler {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(
                 HttpStatus.METHOD_NOT_ALLOWED, "Method " + e.getMethod() + " is not supported");
         problem.setTitle("Method Not Allowed");
+        return problem;
+    }
+
+    @ExceptionHandler(OrderNotFoundException.class)
+    ProblemDetail handleOrderNotFound(OrderNotFoundException e) {
+        log.warn(e.getMessage());
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.NOT_FOUND, e.getMessage());
+        problem.setTitle("Not Found");
+        problem.setType(URI.create("https://api.pizzeria.com/errors/order-not-found"));
+        return problem;
+    }
+
+    @ExceptionHandler(OrderAccessDeniedException.class)
+    ProblemDetail handleOrderAccessDenied(OrderAccessDeniedException e) {
+        log.warn(e.getMessage());
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.FORBIDDEN, e.getMessage());
+        problem.setTitle("Forbidden");
+        problem.setType(URI.create("https://api.pizzeria.com/errors/access-denied"));
+        return problem;
+    }
+
+    @ExceptionHandler(InvalidStatusTransitionException.class)
+    ProblemDetail handleInvalidStatusTransition(InvalidStatusTransitionException e) {
+        log.warn(e.getMessage());
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST, e.getMessage());
+        problem.setTitle("Bad Request");
+        problem.setType(URI.create("https://api.pizzeria.com/errors/invalid-status-transition"));
         return problem;
     }
 
