@@ -45,21 +45,15 @@ class OrderServiceTest {
 
     @BeforeEach
     void setUp() {
-        margherita = Product.fromDto(new ProductDto(1L, "Margherita", "Classic pizza", TEST_MARGHERITA_PRICE, TEST_LOCATION_ID));
-        pepperoni = Product.fromDto(new ProductDto(2L, "Pepperoni", "Spicy pizza", TEST_PEPPERONI_PRICE, TEST_LOCATION_ID));
-        SecurityContextHolder.getContext().setAuthentication(new UserIdAuthenticationToken(TEST_LOCATION_ID, TEST_LOCATION_ID));
-    }
-
-    @AfterEach
-    void tearDown() {
-        SecurityContextHolder.clearContext();
+        margherita = Product.fromDto(new ProductDto(1L, "Margherita", "Classic pizza", TEST_MARGHERITA_PRICE));
+        pepperoni = Product.fromDto(new ProductDto(2L, "Pepperoni", "Spicy pizza", TEST_PEPPERONI_PRICE));
     }
 
     @Test
     void createOrder_shouldSetOrderFields() {
         // Given
         OrderRequestDto request = buildRequest(item(1L, 1));
-        when(productClient.getProductById(eq(1L), eq(TEST_LOCATION_ID))).thenReturn(margherita);
+        when(productClient.getProductById(eq(1L))).thenReturn(margherita);
         when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
 
         // When
@@ -77,7 +71,7 @@ class OrderServiceTest {
     void createOrder_shouldCreateOneItemForSingleProduct() {
         // Given
         OrderRequestDto request = buildRequest(item(1L, 1));
-        when(productClient.getProductById(eq(1L), eq(TEST_LOCATION_ID))).thenReturn(margherita);
+        when(productClient.getProductById(eq(1L))).thenReturn(margherita);
         when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
 
         // When
@@ -93,8 +87,8 @@ class OrderServiceTest {
     void createOrder_shouldCreateMultipleItemsForDifferentProducts() {
         // Given
         OrderRequestDto request = buildRequest(item(1L, 1), item(2L, 1));
-        when(productClient.getProductById(eq(1L), eq(TEST_LOCATION_ID))).thenReturn(margherita);
-        when(productClient.getProductById(eq(2L), eq(TEST_LOCATION_ID))).thenReturn(pepperoni);
+        when(productClient.getProductById(eq(1L))).thenReturn(margherita);
+        when(productClient.getProductById(eq(2L))).thenReturn(pepperoni);
         when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
 
         // When
@@ -109,8 +103,8 @@ class OrderServiceTest {
     void createOrder_shouldUseQuantityFromRequest() {
         // Given
         OrderRequestDto request = buildRequest(item(1L, 4), item(2L, 2));
-        when(productClient.getProductById(eq(1L), eq(TEST_LOCATION_ID))).thenReturn(margherita);
-        when(productClient.getProductById(eq(2L), eq(TEST_LOCATION_ID))).thenReturn(pepperoni);
+        when(productClient.getProductById(eq(1L))).thenReturn(margherita);
+        when(productClient.getProductById(eq(2L))).thenReturn(pepperoni);
         when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
 
         // When
@@ -136,8 +130,8 @@ class OrderServiceTest {
     void createOrder_shouldCalculateTotalPriceAutomatically() {
         // Given
         OrderRequestDto request = buildRequest(item(1L, 2), item(2L, 2));
-        when(productClient.getProductById(eq(1L), eq(TEST_LOCATION_ID))).thenReturn(margherita);
-        when(productClient.getProductById(eq(2L), eq(TEST_LOCATION_ID))).thenReturn(pepperoni);
+        when(productClient.getProductById(eq(1L))).thenReturn(margherita);
+        when(productClient.getProductById(eq(2L))).thenReturn(pepperoni);
         when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
 
         // When
@@ -151,7 +145,7 @@ class OrderServiceTest {
     void createOrder_shouldSaveHistoricalData() {
         // Given
         OrderRequestDto request = buildRequest(item(1L, 1));
-        when(productClient.getProductById(eq(1L), eq(TEST_LOCATION_ID))).thenReturn(margherita);
+        when(productClient.getProductById(eq(1L))).thenReturn(margherita);
         when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
 
         // When
@@ -167,23 +161,23 @@ class OrderServiceTest {
     void createOrder_shouldCallProductClientPerItem() {
         // Given
         OrderRequestDto request = buildRequest(item(1L, 2), item(2L, 1));
-        when(productClient.getProductById(eq(1L), eq(TEST_LOCATION_ID))).thenReturn(margherita);
-        when(productClient.getProductById(eq(2L), eq(TEST_LOCATION_ID))).thenReturn(pepperoni);
+        when(productClient.getProductById(eq(1L))).thenReturn(margherita);
+        when(productClient.getProductById(eq(2L))).thenReturn(pepperoni);
         when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
 
         // When
         orderService.createOrder(request);
 
         // Then
-        verify(productClient, times(1)).getProductById(1L, TEST_LOCATION_ID);
-        verify(productClient, times(1)).getProductById(2L, TEST_LOCATION_ID);
+        verify(productClient, times(1)).getProductById(1L);
+        verify(productClient, times(1)).getProductById(2L);
     }
 
     @Test
     void createOrder_shouldCallRepositorySave() {
         // Given
         OrderRequestDto request = buildRequest(item(1L, 1));
-        when(productClient.getProductById(eq(1L), eq(TEST_LOCATION_ID))).thenReturn(margherita);
+        when(productClient.getProductById(eq(1L))).thenReturn(margherita);
         when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
 
         // When
@@ -208,7 +202,7 @@ class OrderServiceTest {
     void createOrder_shouldAcceptValidPhoneNumberFormats() {
         // Given
         OrderRequestDto request = buildRequestWithPhone(TEST_PHONE_NUMBER, item(1L, 1));
-        when(productClient.getProductById(eq(1L), eq(TEST_LOCATION_ID))).thenReturn(margherita);
+        when(productClient.getProductById(eq(1L))).thenReturn(margherita);
         when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
 
         // When
@@ -233,7 +227,7 @@ class OrderServiceTest {
     void createOrder_shouldAcceptQuantityAtLimit() {
         // Given
         OrderRequestDto request = buildRequest(item(1L, 50));
-        when(productClient.getProductById(eq(1L), eq(TEST_LOCATION_ID))).thenReturn(margherita);
+        when(productClient.getProductById(eq(1L))).thenReturn(margherita);
         when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
 
         // When

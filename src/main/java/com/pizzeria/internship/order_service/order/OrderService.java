@@ -25,8 +25,8 @@ class OrderService {
     Order createOrder(OrderRequestDto request) {
         Long locationId = request.locationId();
         validateRequest(request);
-        Order order = buildOrderFromRequest(request, locationId);
-        request.items().forEach(item -> addItem(order, item.productId(), item.quantity(), locationId));
+        Order order = buildOrderFromRequest(request);
+        request.items().forEach(item -> addItem(order, item.productId(), item.quantity()));
         order.calculateTotalPrice();
         return orderRepository.save(order);
     }
@@ -90,8 +90,8 @@ class OrderService {
         return phoneNumber.replaceAll("[^\\d]", "");
     }
 
-    private void addItem(Order order, Long productId, int quantity, Long locationId) {
-        Product product = productClient.getProductById(productId, locationId);
+    private void addItem(Order order, Long productId, int quantity) {
+        Product product = productClient.getProductById(productId);
         OrderItem item = OrderItem.builder()
                 .productId(product.getId())
                 .order(order)
