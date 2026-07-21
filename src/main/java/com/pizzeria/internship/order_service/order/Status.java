@@ -5,5 +5,8 @@ public enum Status {
     ACCEPTED,
     IN_PROGRESS,
     REJECTED,
-    PAID
+    READY,
+    PAID,
+    IN_DELIVERY,
+    DELIVERED
 }
