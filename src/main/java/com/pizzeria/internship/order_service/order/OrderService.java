@@ -2,6 +2,7 @@ package com.pizzeria.internship.order_service.order;
 
 import com.pizzeria.internship.order_service.product.Product;
 import com.pizzeria.internship.order_service.product.ProductClient;
+import com.pizzeria.internship.order_service.user.UserContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ class OrderService {
 
     @Transactional
     Order createOrder(OrderRequestDto request) {
+        Long locationId = request.locationId();
         validateRequest(request);
         Order order = buildOrderFromRequest(request);
         request.items().forEach(item -> addItem(order, item.productId(), item.quantity()));
@@ -30,10 +32,19 @@ class OrderService {
     }
 
     List<OrderResponseDto> getOrdersByPhoneNumber(String phoneNumber) {
-        List<Order> orders = orderRepository.findByPhoneNumberAndStatusIn(normalizePhoneNumber(phoneNumber), ACTIVE_STATUSES);
+        List<Order> orders = orderRepository.findByPhoneNumberAndStatusIn(
+                normalizePhoneNumber(phoneNumber), ACTIVE_STATUSES);
         if (orders.isEmpty()) {
             throw new OrderNotFoundException(phoneNumber);
         }
+        return orders.stream()
+                .map(OrderResponseDto::fromOrder)
+                .toList();
+    }
+
+    List<OrderResponseDto> getOrdersByLocation() {
+        Long locationId = UserContext.getLocationId();
+        List<Order> orders = orderRepository.findByLocationId(locationId);
         return orders.stream()
                 .map(OrderResponseDto::fromOrder)
                 .toList();
@@ -64,12 +75,12 @@ class OrderService {
         }
     }
 
-    private Order buildOrderFromRequest(OrderRequestDto request) {
+    private Order buildOrderFromRequest(OrderRequestDto request, Long locationId) {
         return Order.builder()
                 .customerName(request.customerName())
                 .phoneNumber(normalizePhoneNumber(request.phoneNumber()))
                 .deliveryAddress(request.deliveryAddress())
-                .locationId(request.locationId())
+                .locationId(locationId)
                 .status(Status.NEW)
                 .totalPrice(BigDecimal.ZERO)
                 .build();

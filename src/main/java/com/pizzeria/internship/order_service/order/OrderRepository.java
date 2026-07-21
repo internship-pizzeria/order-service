@@ -10,4 +10,8 @@ import java.util.UUID;
 interface OrderRepository extends JpaRepository<Order, UUID> {
 
     List<Order> findByPhoneNumberAndStatusIn(String phoneNumber, List<Status> statuses);
+
+    List<Order> findByPhoneNumberAndStatusInAndLocationId(String phoneNumber, List<Status> statuses, Long locationId);
+
+    List<Order> findByLocationId(Long locationId);
 }

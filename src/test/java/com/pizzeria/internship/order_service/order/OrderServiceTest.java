@@ -3,15 +3,17 @@ package com.pizzeria.internship.order_service.order;
 import com.pizzeria.internship.order_service.product.Product;
 import com.pizzeria.internship.order_service.product.ProductClient;
 import com.pizzeria.internship.order_service.product.ProductDto;
+import com.pizzeria.internship.order_service.user.UserIdAuthenticationToken;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
