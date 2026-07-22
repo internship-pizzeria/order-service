@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,4 +20,6 @@ interface OrderRepository extends JpaRepository<Order, UUID> {
     @Modifying
     @Query("UPDATE Order o SET o.status = :status WHERE o.id = :id")
     void updateStatus(@Param("id") UUID id, @Param("status") Status status);
+
+    List<Order> findByStatusAndCreatedAtBefore(Status status, Instant createdAt);
 }

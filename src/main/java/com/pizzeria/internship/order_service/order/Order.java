@@ -44,6 +44,9 @@ class Order {
     @Column(nullable = false)
     private BigDecimal totalPrice;
 
+    @Column
+    private String rejectionReason;
+
     @CreationTimestamp
     private Instant createdAt;
 
@@ -56,5 +59,14 @@ class Order {
         this.totalPrice = items.stream()
                 .map(item -> item.getHistoricalPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public void reject(String reason) {
+        this.status = Status.REJECTED;
+        this.rejectionReason = reason;
+    }
+
+    public void updateStatus(Status status) {
+        this.status = status;
     }
 }
