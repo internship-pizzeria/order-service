@@ -116,12 +116,18 @@ class StatusTransitionTest {
     }
 
     @Test
-    void shouldRejectTerminalPaidToAnyStatus() {
+    void shouldRejectTerminalPaidToAnyStatusExceptInProgressAndInDelivery() {
         for (Status target : Status.values()) {
-            if (target == Status.PAID) continue;
+            if (target == Status.PAID || target == Status.IN_PROGRESS || target == Status.IN_DELIVERY) continue;
             assertThrows(InvalidStatusTransitionException.class,
                     () -> StatusTransition.validateTransition(Status.PAID, target));
         }
+    }
+
+    @Test
+    void shouldAllowPaidToInProgressAndInDelivery() {
+        assertDoesNotThrow(() -> StatusTransition.validateTransition(Status.PAID, Status.IN_PROGRESS));
+        assertDoesNotThrow(() -> StatusTransition.validateTransition(Status.PAID, Status.IN_DELIVERY));
     }
 
     @Test

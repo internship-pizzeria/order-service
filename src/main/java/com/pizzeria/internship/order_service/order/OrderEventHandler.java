@@ -6,6 +6,9 @@ import com.pizzeria.internship.order_service.security.OrderWebSocketHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionalEventListener;
+
+import static org.springframework.transaction.event.TransactionPhase.AFTER_COMMIT;
 
 @Component
 class OrderEventHandler {
@@ -21,22 +24,15 @@ class OrderEventHandler {
         this.objectMapper.registerModule(new JavaTimeModule());
     }
 
-    void sendOrderNew(Long locationId, OrderResponseDto order) {
-        sendEvent(locationId, "ORDER_NEW", order);
-    }
-
-    void sendStatusChanged(Long locationId, OrderResponseDto order) {
-        sendEvent(locationId, "ORDER_STATUS_CHANGED", order);
-    }
-
-    private void sendEvent(Long locationId, String eventType, OrderResponseDto order) {
+    @TransactionalEventListener(phase = AFTER_COMMIT)
+    void onOrderEvent(OrderEvent event) {
         try {
-            OrderEvent event = new OrderEvent(eventType, order);
             String json = objectMapper.writeValueAsString(event);
-            log.info("Sending {} event to locationId={} for orderId={}", eventType, locationId, order.orderId());
-            wsHandler.sendToLocation(locationId, json);
+            log.info("Sending {} event to locationId={} for orderId={}",
+                    event.eventType(), event.locationId(), event.data().orderId());
+            wsHandler.sendToLocation(event.locationId(), json);
         } catch (Exception e) {
-            log.error("Failed to send {} event to locationId={}", eventType, locationId, e);
+            log.error("Failed to send {} event to locationId={}", event.eventType(), event.locationId(), e);
         }
     }
 }

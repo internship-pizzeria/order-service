@@ -8,9 +8,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.math.BigDecimal;
@@ -33,7 +35,7 @@ class OrderServiceTest {
     private ProductClient productClient;
 
     @Mock
-    private OrderEventHandler eventHandler;
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private OrderService orderService;
@@ -214,6 +216,19 @@ class OrderServiceTest {
         assertEquals(50, result.items().getFirst().quantity());
     }
 
+    @Test
+    void createOrder_shouldPublishOrderCreatedEvent() {
+        OrderRequestDto request = buildRequest(item(1L, 1));
+        when(productClient.getProductById(eq(1L))).thenReturn(margherita);
+        when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        orderService.createOrder(request);
+
+        ArgumentCaptor<OrderEvent> captor = ArgumentCaptor.forClass(OrderEvent.class);
+        verify(eventPublisher).publishEvent(captor.capture());
+        assertEquals("ORDER_NEW", captor.getValue().eventType());
+    }
+
     // --- Status transition tests ---
 
     @Test
@@ -312,13 +327,24 @@ class OrderServiceTest {
     }
 
     @Test
-    void updateStatus_shouldRejectPaidToAnyStatus() {
+    void updateStatus_shouldRejectPaidToAnyStatusExceptInProgressAndInDelivery() {
         UUID orderId = UUID.randomUUID();
         Order order = buildOrder(orderId, Status.PAID);
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
 
         assertThrows(InvalidStatusTransitionException.class,
-                () -> orderService.updateOrderStatus(orderId, new UpdateStatusRequestDto("IN_PROGRESS")));
+                () -> orderService.updateOrderStatus(orderId, new UpdateStatusRequestDto("READY")));
+    }
+
+    @Test
+    void updateStatus_shouldAllowPaidToInProgressAndInDelivery() {
+        UUID orderId = UUID.randomUUID();
+        Order order = buildOrder(orderId, Status.PAID);
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+
+        UpdateStatusRequestDto inProgressRequest = new UpdateStatusRequestDto("IN_PROGRESS");
+        orderService.updateOrderStatus(orderId, inProgressRequest);
+        verify(orderRepository).updateStatus(orderId, Status.IN_PROGRESS);
     }
 
     @Test
@@ -399,6 +425,19 @@ class OrderServiceTest {
         InvalidOrderException ex = assertThrows(InvalidOrderException.class,
                 () -> orderService.updateOrderStatus(orderId, request));
         assertTrue(ex.getMessage().contains("Invalid status value"));
+    }
+
+    @Test
+    void updateStatus_shouldPublishOrderStatusChangedEvent() {
+        UUID orderId = UUID.randomUUID();
+        Order order = buildOrder(orderId, Status.NEW);
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+
+        orderService.updateOrderStatus(orderId, new UpdateStatusRequestDto("ACCEPTED"));
+
+        ArgumentCaptor<OrderEvent> captor = ArgumentCaptor.forClass(OrderEvent.class);
+        verify(eventPublisher).publishEvent(captor.capture());
+        assertEquals("ORDER_STATUS_CHANGED", captor.getValue().eventType());
     }
 
     // --- getOrdersByLocation with status filter ---
