@@ -4,10 +4,9 @@ import com.pizzeria.internship.order_service.product.Product;
 import com.pizzeria.internship.order_service.product.ProductClient;
 import com.pizzeria.internship.order_service.user.UserContext;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -22,7 +21,7 @@ class OrderService {
 
     private final OrderRepository orderRepository;
     private final ProductClient productClient;
-    private final OrderEventHandler eventHandler;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     OrderResponseDto createOrder(OrderRequestDto request) {
@@ -32,8 +31,7 @@ class OrderService {
         order.calculateTotalPrice();
         orderRepository.save(order);
         OrderResponseDto dto = OrderResponseDto.fromOrder(order);
-        Long locationId = order.getLocationId();
-        afterCommit(() -> eventHandler.sendOrderNew(locationId, dto));
+        eventPublisher.publishEvent(new OrderEvent("ORDER_NEW", order.getLocationId(), dto));
         return dto;
     }
 
@@ -89,8 +87,7 @@ class OrderService {
                         .map(OrderItemResponseDto::fromOrderItem)
                         .toList()
         );
-        Long statusLocationId = order.getLocationId();
-        afterCommit(() -> eventHandler.sendStatusChanged(statusLocationId, dto));
+        eventPublisher.publishEvent(new OrderEvent("ORDER_STATUS_CHANGED", order.getLocationId(), dto));
         return dto;
     }
 
@@ -144,18 +141,5 @@ class OrderService {
                 .historicalPrice(product.getPrice())
                 .build();
         order.addItem(item);
-    }
-
-    private void afterCommit(Runnable action) {
-        if (TransactionSynchronizationManager.isSynchronizationActive()) {
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-                @Override
-                public void afterCommit() {
-                    action.run();
-                }
-            });
-        } else {
-            action.run();
-        }
     }
 }

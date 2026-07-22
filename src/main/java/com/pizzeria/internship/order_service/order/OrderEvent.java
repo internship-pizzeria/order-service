@@ -1,6 +1,4 @@
 package com.pizzeria.internship.order_service.order;
 
-import com.pizzeria.internship.order_service.order.OrderResponseDto;
-
-record OrderEvent(String eventType, OrderResponseDto data) {
+record OrderEvent(String eventType, Long locationId, OrderResponseDto data) {
 }

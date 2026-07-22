@@ -3,6 +3,7 @@ package com.pizzeria.internship.order_service.order;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,7 @@ import java.util.List;
 public class OrderTimeoutScheduler {
 
     private final OrderRepository orderRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Value("${order.timeout.minutes:15}")
     private long timeoutMinutes;
@@ -32,6 +34,8 @@ public class OrderTimeoutScheduler {
             orderRepository.save(order);
             log.info("Auto-rejected order {} for location {} - no response within {} minutes",
                     order.getId(), order.getLocationId(), timeoutMinutes);
+            OrderResponseDto dto = OrderResponseDto.fromOrder(order);
+            eventPublisher.publishEvent(new OrderEvent("ORDER_STATUS_CHANGED", order.getLocationId(), dto));
         }
     }
 }
