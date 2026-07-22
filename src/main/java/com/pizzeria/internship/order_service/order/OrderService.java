@@ -6,6 +6,8 @@ import com.pizzeria.internship.order_service.user.UserContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -20,6 +22,7 @@ class OrderService {
 
     private final OrderRepository orderRepository;
     private final ProductClient productClient;
+    private final OrderEventHandler eventHandler;
 
     @Transactional
     OrderResponseDto createOrder(OrderRequestDto request) {
@@ -28,7 +31,10 @@ class OrderService {
         request.items().forEach(item -> addItem(order, item.productId(), item.quantity()));
         order.calculateTotalPrice();
         orderRepository.save(order);
-        return OrderResponseDto.fromOrder(order);
+        OrderResponseDto dto = OrderResponseDto.fromOrder(order);
+        Long locationId = order.getLocationId();
+        afterCommit(() -> eventHandler.sendOrderNew(locationId, dto));
+        return dto;
     }
 
     OrderResponseDto getOrderStatusById(UUID orderId) {
@@ -73,7 +79,7 @@ class OrderService {
 
         StatusTransition.validateTransition(order.getStatus(), targetStatus);
         orderRepository.updateStatus(orderId, targetStatus);
-        return new OrderResponseDto(
+        OrderResponseDto dto = new OrderResponseDto(
                 orderId,
                 targetStatus.name(),
                 order.getTotalPrice(),
@@ -83,6 +89,9 @@ class OrderService {
                         .map(OrderItemResponseDto::fromOrderItem)
                         .toList()
         );
+        Long statusLocationId = order.getLocationId();
+        afterCommit(() -> eventHandler.sendStatusChanged(statusLocationId, dto));
+        return dto;
     }
 
     private void validateRequest(OrderRequestDto request) {
@@ -135,5 +144,18 @@ class OrderService {
                 .historicalPrice(product.getPrice())
                 .build();
         order.addItem(item);
+    }
+
+    private void afterCommit(Runnable action) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    action.run();
+                }
+            });
+        } else {
+            action.run();
+        }
     }
 }

@@ -32,6 +32,9 @@ class OrderServiceTest {
     @Mock
     private ProductClient productClient;
 
+    @Mock
+    private OrderEventHandler eventHandler;
+
     @InjectMocks
     private OrderService orderService;
 
