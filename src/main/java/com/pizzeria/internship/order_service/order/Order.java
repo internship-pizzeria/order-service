@@ -38,7 +38,7 @@ class Order {
     @Column(nullable = false)
     private Long locationId;
 
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     private Status status;
 
     @Column(nullable = false)

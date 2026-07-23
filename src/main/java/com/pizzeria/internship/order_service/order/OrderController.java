@@ -23,7 +23,16 @@ class OrderController {
     @GetMapping
     List<OrderResponseDto> getOrdersByLocation(
             @RequestParam(required = false) String status) {
-        Status statusFilter = (status != null) ? Status.valueOf(status.toUpperCase()) : null;
+        Status statusFilter;
+        if (status != null) {
+            try {
+                statusFilter = Status.valueOf(status.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new InvalidOrderException("Invalid status value: " + status);
+            }
+        } else {
+            statusFilter = null;
+        }
         return orderService.getOrdersByLocation(statusFilter);
     }
 
