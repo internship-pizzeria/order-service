@@ -44,9 +44,7 @@ public class OrderWebSocketHandler extends TextWebSocketHandler {
             Set<WebSocketSession> sessions = sessionsByLocation.get(locationId);
             if (sessions != null) {
                 sessions.remove(session);
-                if (sessions.isEmpty()) {
-                    sessionsByLocation.remove(locationId);
-                }
+                sessionsByLocation.values().removeIf(Set::isEmpty);
                 log.info("WebSocket disconnected: sessionId={}, locationId={}, remaining={}",
                         session.getId(), locationId,
                         sessionsByLocation.containsKey(locationId) ? sessionsByLocation.get(locationId).size() : 0);

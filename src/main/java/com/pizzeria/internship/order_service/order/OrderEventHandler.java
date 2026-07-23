@@ -1,7 +1,6 @@
 package com.pizzeria.internship.order_service.order;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.databind.ObjectMapper;
 import com.pizzeria.internship.order_service.security.OrderWebSocketHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,10 +17,9 @@ class OrderEventHandler {
     private final OrderWebSocketHandler wsHandler;
     private final ObjectMapper objectMapper;
 
-    OrderEventHandler(OrderWebSocketHandler wsHandler) {
+    OrderEventHandler(OrderWebSocketHandler wsHandler, ObjectMapper objectMapper) {
         this.wsHandler = wsHandler;
-        this.objectMapper = new ObjectMapper();
-        this.objectMapper.registerModule(new JavaTimeModule());
+        this.objectMapper = objectMapper;
     }
 
     @TransactionalEventListener(phase = AFTER_COMMIT)

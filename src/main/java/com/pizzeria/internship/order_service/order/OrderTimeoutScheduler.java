@@ -24,18 +24,26 @@ public class OrderTimeoutScheduler {
     private long timeoutMinutes;
 
     @Scheduled(fixedRate = 60000)
-    @Transactional
     public void rejectExpiredOrders() {
         Instant timeout = Instant.now().minus(timeoutMinutes, ChronoUnit.MINUTES);
         List<Order> expiredOrders = orderRepository.findByStatusAndCreatedAtBefore(Status.NEW, timeout);
 
         for (Order order : expiredOrders) {
-            order.reject("Order timed out - no response from location");
-            orderRepository.save(order);
-            log.info("Auto-rejected order {} for location {} - no response within {} minutes",
-                    order.getId(), order.getLocationId(), timeoutMinutes);
-            OrderResponseDto dto = OrderResponseDto.fromOrder(order);
-            eventPublisher.publishEvent(new OrderEvent("ORDER_STATUS_CHANGED", order.getLocationId(), dto));
+            try {
+                rejectOrder(order);
+            } catch (Exception e) {
+                log.error("Failed to auto-reject order {} for location {}", order.getId(), order.getLocationId(), e);
+            }
         }
+    }
+
+    @Transactional
+    void rejectOrder(Order order) {
+        order.reject("Order timed out - no response from location");
+        orderRepository.save(order);
+        log.info("Auto-rejected order {} for location {} - no response within {} minutes",
+                order.getId(), order.getLocationId(), timeoutMinutes);
+        OrderResponseDto dto = OrderResponseDto.fromOrder(order);
+        eventPublisher.publishEvent(new OrderEvent("ORDER_STATUS_CHANGED", order.getLocationId(), dto));
     }
 }

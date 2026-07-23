@@ -28,7 +28,7 @@ class OrderItem {
     private Long productId;
 
     @Builder.Default
-    private Integer quantity = 1;
+    private int quantity = 1;
 
     private String historicalName;
 

@@ -76,17 +76,9 @@ class OrderService {
         }
 
         StatusTransition.validateTransition(order.getStatus(), targetStatus);
-        orderRepository.updateStatus(orderId, targetStatus);
-        OrderResponseDto dto = new OrderResponseDto(
-                orderId,
-                targetStatus.name(),
-                order.getTotalPrice(),
-                order.getDeliveryAddress(),
-                order.getCreatedAt(),
-                order.getItems().stream()
-                        .map(OrderItemResponseDto::fromOrderItem)
-                        .toList()
-        );
+        order.updateStatus(targetStatus);
+        orderRepository.save(order);
+        OrderResponseDto dto = OrderResponseDto.fromOrder(order);
         eventPublisher.publishEvent(new OrderEvent("ORDER_STATUS_CHANGED", order.getLocationId(), dto));
         return dto;
     }
@@ -103,12 +95,18 @@ class OrderService {
     }
 
     private void validateQuantity(java.util.List<OrderItemRequestDto> items) {
+        for (OrderItemRequestDto item : items) {
+            if (item.quantity() < 1) {
+                throw new InvalidOrderException(
+                        "Each item must have a quantity of at least 1");
+            }
+        }
         int totalQuantity = items.stream()
                 .mapToInt(OrderItemRequestDto::quantity)
                 .sum();
-        if  (totalQuantity<MIN_PIZZAS_PER_ORDER){
+        if (totalQuantity < MIN_PIZZAS_PER_ORDER) {
             throw new InvalidOrderException(
-                    "You cannot order less than" + MIN_PIZZAS_PER_ORDER + "pizzas per order");
+                    "You cannot order less than " + MIN_PIZZAS_PER_ORDER + " pizzas per order");
         }
         if (totalQuantity > MAX_PIZZAS_PER_ORDER) {
             throw new InvalidOrderException(
@@ -128,6 +126,9 @@ class OrderService {
     }
 
     private String normalizePhoneNumber(String phoneNumber) {
+        if (phoneNumber.startsWith("+")) {
+            return "+" + phoneNumber.substring(1).replaceAll("[^\\d]", "");
+        }
         return phoneNumber.replaceAll("[^\\d]", "");
     }
 
