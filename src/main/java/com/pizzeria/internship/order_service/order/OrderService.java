@@ -27,7 +27,7 @@ class OrderService {
     OrderResponseDto createOrder(OrderRequestDto request) {
         validateRequest(request);
         Order order = buildOrderFromRequest(request);
-        request.items().forEach(item -> addItem(order, item.productId(), item.quantity()));
+        request.items().forEach(item -> addItem(order, item.productId(), item.quantity(), request.locationId()));
         order.calculateTotalPrice();
         orderRepository.save(order);
         OrderResponseDto dto = OrderResponseDto.fromOrder(order);
@@ -106,7 +106,7 @@ class OrderService {
         int totalQuantity = items.stream()
                 .mapToInt(OrderItemRequestDto::quantity)
                 .sum();
-        if  (totalQuantity<MIN_PIZZAS_PER_ORDER){
+        if (totalQuantity < MIN_PIZZAS_PER_ORDER) {
             throw new InvalidOrderException(
                     "You cannot order less than" + MIN_PIZZAS_PER_ORDER + "pizzas per order");
         }
@@ -131,8 +131,11 @@ class OrderService {
         return phoneNumber.replaceAll("[^\\d]", "");
     }
 
-    private void addItem(Order order, Long productId, int quantity) {
-        Product product = productClient.getProductById(productId);
+    private void addItem(Order order, Long productId, int quantity, Long locationId) {
+        Product product = productClient.getProductById(productId, locationId);
+        if (!product.isAvailable()) {
+            throw new InvalidOrderException("Product " + product.getName() + " is currently unavailable");
+        }
         OrderItem item = OrderItem.builder()
                 .productId(product.getId())
                 .order(order)
