@@ -2,6 +2,7 @@ package com.pizzeria.internship.order_service.order;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,6 +25,7 @@ public class OrderTimeoutScheduler {
     private long timeoutMinutes;
 
     @Scheduled(fixedRate = 60000)
+    @SchedulerLock(name = "rejectExpiredOrders", lockAtMostFor = "5m", lockAtLeastFor = "1m")
     public void rejectExpiredOrders() {
         Instant timeout = Instant.now().minus(timeoutMinutes, ChronoUnit.MINUTES);
         List<Order> expiredOrders = orderRepository.findByStatusAndCreatedAtBefore(Status.NEW, timeout);
