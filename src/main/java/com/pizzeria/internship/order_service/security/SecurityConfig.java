@@ -30,6 +30,7 @@ class SecurityConfig {
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/orders").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/orders/*/status").permitAll()
+                        .requestMatchers("/api/v1/admin/**").authenticated()
                         .requestMatchers("/api/v1/orders/**").authenticated()
                         .anyRequest().authenticated()
                 )
