@@ -5,7 +5,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-record OrderResponseDto(
+public record OrderResponseDto(
         UUID orderId,
         String status,
         BigDecimal totalPrice,
