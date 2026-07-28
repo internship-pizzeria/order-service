@@ -33,7 +33,7 @@ public class ReportOrchestrator {
         ReportJob job = ReportJob.builder()
                 .type(type)
                 .status(ReportStatus.PENDING)
-                .locationId(request.locationId() != null ? request.locationId().toString() : null)
+                .locationId(request.locationId())
                 .fromTime(request.from())
                 .toTime(request.to())
                 .build();
@@ -50,7 +50,7 @@ public class ReportOrchestrator {
         try {
             ReportGenerator generator = registry.getGenerator(job.getType());
             ReportRequest request = new ReportRequest(
-                    job.getLocationId() != null ? Long.valueOf(job.getLocationId()) : null,
+                    job.getLocationId(),
                     job.getFromTime(),
                     job.getToTime()
             );

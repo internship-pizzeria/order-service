@@ -28,7 +28,7 @@ public class ReportJob {
     private ReportStatus status;
 
     @Column
-    private String locationId;
+    private Long locationId;
 
     @Column(nullable = false)
     private Instant fromTime;

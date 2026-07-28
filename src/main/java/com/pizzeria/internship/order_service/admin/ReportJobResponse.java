@@ -13,6 +13,7 @@ record ReportJobResponse(
         ReportStatus status,
         Instant createdAt,
         Instant completedAt,
+        String filePath,
         String errorMessage
 ) {
     static ReportJobResponse from(ReportJob job) {
@@ -22,6 +23,7 @@ record ReportJobResponse(
                 job.getStatus(),
                 job.getCreatedAt(),
                 job.getCompletedAt(),
+                job.getFilePath(),
                 job.getErrorMessage()
         );
     }
