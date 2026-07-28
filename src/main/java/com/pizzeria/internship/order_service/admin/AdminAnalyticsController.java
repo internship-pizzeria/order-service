@@ -1,6 +1,7 @@
 package com.pizzeria.internship.order_service.admin;
 
 import com.pizzeria.internship.order_service.analytics.OrderAnalyticsFacade;
+import com.pizzeria.internship.order_service.analytics.ProductRankingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -20,10 +21,8 @@ class AdminAnalyticsController {
     // PERSON B SECTION: Revenue, Rankings, and Location Performance
     // =========================================================================
     private final OrderAnalyticsFacade orderAnalyticsFacade;
+    private final ProductRankingService productRankingService;
 
-    /**
-     * Task 1: Retrieves aggregated revenue summary, order counts, and AOV.
-     */
     @GetMapping("/revenue")
     public RevenueSummaryResponse getRevenueSummary(
             @RequestParam(required = false) Long locationId,
@@ -39,9 +38,6 @@ class AdminAnalyticsController {
         );
     }
 
-    /**
-     * Task 2: Retrieves paginated product popularity ranking by quantity or revenue.
-     */
     @GetMapping("/products/ranking")
     public ProductRankingResponse getProductRanking(
             @RequestParam(required = false) Long locationId,
@@ -49,8 +45,7 @@ class AdminAnalyticsController {
             @RequestParam Instant to,
             @RequestParam(defaultValue = "BY_REVENUE") RankingSort sortBy,
             @PageableDefault(size = 20) Pageable pageable) {
-        // TODO (Task 2): Implement joined query between Order and OrderItem with pagination
-        return null;
+        return productRankingService.getProductRanking(locationId, from, to, sortBy, pageable);
     }
 
     /**
