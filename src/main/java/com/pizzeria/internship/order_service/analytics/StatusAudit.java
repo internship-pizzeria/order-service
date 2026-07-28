@@ -1,4 +1,4 @@
-package com.pizzeria.internship.order_service.admin;
+package com.pizzeria.internship.order_service.analytics;
 
 import com.pizzeria.internship.order_service.order.Status;
 import jakarta.persistence.*;
@@ -8,10 +8,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.Instant;
 import java.util.UUID;
 
-/**
- * Entity representing an audit log entry for order status transitions.
- * Used for tracking lifecycle changes, performance analytics, and compliance.
- */
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -35,10 +31,10 @@ public class StatusAudit {
     private Status toStatus;
 
     @Column(nullable = false)
-    private Long changedBy; // ID of the user or system component that triggered the change
+    private Long changedBy;
 
     @Column(nullable = false)
-    private Long locationId; // Restaurant location context for filtering analytics
+    private Long locationId;
 
     @CreationTimestamp
     private Instant changedAt;
