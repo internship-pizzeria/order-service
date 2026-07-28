@@ -6,12 +6,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
 @Repository
-interface OrderRepository extends JpaRepository<Order, UUID> {
+public interface OrderRepository extends JpaRepository<Order, UUID> {
 
     List<Order> findByLocationId(Long locationId);
 
@@ -22,4 +23,24 @@ interface OrderRepository extends JpaRepository<Order, UUID> {
     void updateStatus(@Param("id") UUID id, @Param("status") Status status);
 
     List<Order> findByStatusAndCreatedAtBefore(Status status, Instant createdAt);
+
+    @Query("""
+            SELECT o.locationId as locationId,
+                   COALESCE(SUM(o.totalPrice), 0) as totalRevenue,
+                   COUNT(o) as orderCount
+            FROM Order o
+            WHERE o.createdAt >= :from AND o.createdAt < :to
+            AND o.status != 'REJECTED'
+            GROUP BY o.locationId
+            """)
+    List<DailyAggregation> getDailyAggregations(
+            @Param("from") Instant from,
+            @Param("to") Instant to
+    );
+
+    interface DailyAggregation {
+        Long getLocationId();
+        BigDecimal getTotalRevenue();
+        long getOrderCount();
+    }
 }

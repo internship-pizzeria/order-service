@@ -10,13 +10,6 @@ import java.util.List;
  */
 public interface AdminAnalyticsDtos {
 
-    // Task 1: Revenue Summary
-    record RevenueSummaryResponse(
-            BigDecimal totalRevenue,
-            long orderCount,
-            BigDecimal averageOrderValue
-    ) {}
-
     // Task 2: Product Popularity Ranking
     record ProductRankingItem(
             Long productId,
