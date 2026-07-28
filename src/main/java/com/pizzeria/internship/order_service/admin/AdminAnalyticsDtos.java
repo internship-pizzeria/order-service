@@ -10,20 +10,7 @@ import java.util.List;
  */
 public interface AdminAnalyticsDtos {
 
-    // Task 2: Product Popularity Ranking
-    record ProductRankingItem(
-            Long productId,
-            String historicalName,
-            long totalQuantity,
-            BigDecimal totalRevenue
-    ) {}
 
-    record ProductRankingResponse(
-            List<ProductRankingItem> content,
-            int pageNumber,
-            int pageSize,
-            long totalElements
-    ) {}
 
     // Task 4: Peak Hours Analysis
     record PeakHourItem(

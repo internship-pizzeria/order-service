@@ -43,11 +43,11 @@ class AdminAnalyticsController {
      * Task 2: Retrieves paginated product popularity ranking by quantity or revenue.
      */
     @GetMapping("/products/ranking")
-    public AdminAnalyticsDtos.ProductRankingResponse getProductRanking(
+    public ProductRankingResponse getProductRanking(
             @RequestParam(required = false) Long locationId,
             @RequestParam Instant from,
             @RequestParam Instant to,
-            @RequestParam(defaultValue = "BY_REVENUE") String sortBy,
+            @RequestParam(defaultValue = "BY_REVENUE") RankingSort sortBy,
             @PageableDefault(size = 20) Pageable pageable) {
         // TODO (Task 2): Implement joined query between Order and OrderItem with pagination
         return null;
