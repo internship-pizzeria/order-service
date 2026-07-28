@@ -1,9 +1,10 @@
 package com.pizzeria.internship.order_service.admin;
 
+import com.pizzeria.internship.order_service.analytics.OrderAnalyticsFacade;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
-
 import java.time.Instant;
 
 /**
@@ -11,24 +12,31 @@ import java.time.Instant;
  * Secured via Spring Security and restricted to authorized admin roles/users.
  */
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/admin/analytics")
 class AdminAnalyticsController {
 
     // =========================================================================
     // PERSON B SECTION: Revenue, Rankings, and Location Performance
     // =========================================================================
+    private final OrderAnalyticsFacade orderAnalyticsFacade;
 
     /**
      * Task 1: Retrieves aggregated revenue summary, order counts, and AOV.
      */
     @GetMapping("/revenue")
-    public AdminAnalyticsDtos.RevenueSummaryResponse getRevenueSummary(
+    public RevenueSummaryResponse getRevenueSummary(
             @RequestParam(required = false) Long locationId,
-            @RequestParam String period,
             @RequestParam Instant from,
             @RequestParam Instant to) {
-        // TODO (Task 1): Implement aggregate SUM and COUNT queries via OrderRepository
-        return null;
+
+        OrderAnalyticsFacade.RevenueResult result = orderAnalyticsFacade.calculateRevenue(locationId, from, to);
+
+        return new RevenueSummaryResponse(
+                result.totalRevenue(),
+                result.orderCount(),
+                result.averageOrderValue()
+        );
     }
 
     /**

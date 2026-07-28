@@ -1,5 +1,6 @@
 package com.pizzeria.internship.order_service.order;
 
+import com.pizzeria.internship.order_service.analytics.RevenueCacheService;
 import com.pizzeria.internship.order_service.product.Product;
 import com.pizzeria.internship.order_service.product.ProductClient;
 import com.pizzeria.internship.order_service.product.ProductDto;
@@ -36,6 +37,9 @@ class OrderServiceTest {
 
     @Mock
     private ApplicationEventPublisher eventPublisher;
+
+    @Mock
+    private RevenueCacheService revenueCacheService;
 
     @InjectMocks
     private OrderService orderService;
@@ -241,7 +245,7 @@ class OrderServiceTest {
         OrderResponseDto result = orderService.updateOrderStatus(orderId, request);
 
         assertEquals("ACCEPTED", result.status());
-        verify(orderRepository).updateStatus(orderId, Status.ACCEPTED);
+        verify(orderRepository).save(order);
     }
 
     @Test
@@ -344,7 +348,7 @@ class OrderServiceTest {
 
         UpdateStatusRequestDto inProgressRequest = new UpdateStatusRequestDto("IN_PROGRESS");
         orderService.updateOrderStatus(orderId, inProgressRequest);
-        verify(orderRepository).updateStatus(orderId, Status.IN_PROGRESS);
+        verify(orderRepository).save(order);
     }
 
     @Test
@@ -388,7 +392,7 @@ class OrderServiceTest {
         OrderResponseDto result = orderService.updateOrderStatus(orderId, request);
 
         assertEquals("REJECTED", result.status());
-        verify(orderRepository).updateStatus(orderId, Status.REJECTED);
+        verify(orderRepository).save(order);
     }
 
     @Test

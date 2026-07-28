@@ -1,5 +1,6 @@
 package com.pizzeria.internship.order_service.order;
 
+import com.pizzeria.internship.order_service.analytics.RevenueCacheService;
 import com.pizzeria.internship.order_service.product.Product;
 import com.pizzeria.internship.order_service.product.ProductClient;
 import com.pizzeria.internship.order_service.user.UserContext;
@@ -22,6 +23,7 @@ class OrderService {
     private final OrderRepository orderRepository;
     private final ProductClient productClient;
     private final ApplicationEventPublisher eventPublisher;
+    private final RevenueCacheService revenueCacheService;
 
     @Transactional
     OrderResponseDto createOrder(OrderRequestDto request) {
@@ -30,6 +32,7 @@ class OrderService {
         request.items().forEach(item -> addItem(order, item.productId(), item.quantity(), request.locationId()));
         order.calculateTotalPrice();
         orderRepository.save(order);
+        revenueCacheService.addOrderRevenue(order.getLocationId(), order.getTotalPrice());
         OrderResponseDto dto = OrderResponseDto.fromOrder(order);
         eventPublisher.publishEvent(new OrderEvent("ORDER_NEW", order.getLocationId(), dto));
         return dto;
