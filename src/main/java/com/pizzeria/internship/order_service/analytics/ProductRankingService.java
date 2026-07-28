@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,10 +27,16 @@ public class ProductRankingService {
             Long locationId, Instant from, Instant to,
             RankingSort sortBy, Pageable pageable) {
         Page<ProductRankingItem> page =
-                orderQueryFacade.getProductRanking(locationId, from, to, sortBy, pageable);
+                orderQueryFacade.getProductRanking(locationId, from, to, pageable);
         BigDecimal totalRevenue = orderQueryFacade.getTotalRevenue(locationId, from, to);
 
+        Comparator<ProductRankingItem> comparator = switch (sortBy) {
+            case BY_QUANTITY -> Comparator.comparingLong(ProductRankingItem::totalQuantity).reversed();
+            case BY_REVENUE -> Comparator.comparing(ProductRankingItem::totalRevenue).reversed();
+        };
+
         List<ProductRankingItem> items = page.getContent().stream()
+                .sorted(comparator)
                 .map(item -> new ProductRankingItem(
                         item.productId(),
                         item.historicalName(),

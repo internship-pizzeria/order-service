@@ -41,7 +41,7 @@ class ProductRankingServiceTest {
     void shouldReturnEmptyResponseWhenNoProducts() {
         // GIVEN
         Page<ProductRankingItem> emptyPage = new PageImpl<>(Collections.emptyList(), PAGEABLE, 0);
-        when(orderQueryFacade.getProductRanking(eq(null), eq(FROM), eq(TO), eq(RankingSort.BY_REVENUE), any()))
+        when(orderQueryFacade.getProductRanking(eq(null), eq(FROM), eq(TO), any()))
                 .thenReturn(emptyPage);
         when(orderQueryFacade.getTotalRevenue(eq(null), eq(FROM), eq(TO)))
                 .thenReturn(BigDecimal.ZERO);
@@ -61,7 +61,7 @@ class ProductRankingServiceTest {
         ProductRankingItem item = new ProductRankingItem(1L, "Margherita", 10L, new BigDecimal("299.90"), 0.0);
         Page<ProductRankingItem> page = new PageImpl<>(List.of(item), PAGEABLE, 1);
 
-        when(orderQueryFacade.getProductRanking(eq(null), eq(FROM), eq(TO), eq(RankingSort.BY_REVENUE), any()))
+        when(orderQueryFacade.getProductRanking(eq(null), eq(FROM), eq(TO), any()))
                 .thenReturn(page);
         when(orderQueryFacade.getTotalRevenue(eq(null), eq(FROM), eq(TO)))
                 .thenReturn(new BigDecimal("299.90"));
@@ -89,7 +89,7 @@ class ProductRankingServiceTest {
         ProductRankingItem hawaiian = new ProductRankingItem(3L, "Hawaiian", 5L, new BigDecimal("149.95"), 0.0);
         Page<ProductRankingItem> page = new PageImpl<>(List.of(margherita, pepperoni, hawaiian), PAGEABLE, 3);
 
-        when(orderQueryFacade.getProductRanking(eq(null), eq(FROM), eq(TO), eq(RankingSort.BY_REVENUE), any()))
+        when(orderQueryFacade.getProductRanking(eq(null), eq(FROM), eq(TO), any()))
                 .thenReturn(page);
         when(orderQueryFacade.getTotalRevenue(eq(null), eq(FROM), eq(TO)))
                 .thenReturn(new BigDecimal("1099.65"));
@@ -108,22 +108,45 @@ class ProductRankingServiceTest {
     @Test
     void shouldSortByQuantityWhenSpecified() {
         // GIVEN
-        Page<ProductRankingItem> page = new PageImpl<>(List.of(
-                new ProductRankingItem(1L, "Margherita", 50L, new BigDecimal("1499.50"), 0.0)
-        ), PAGEABLE, 1);
+        ProductRankingItem pepperoni = new ProductRankingItem(2L, "Pepperoni", 50L, new BigDecimal("1499.50"), 0.0);
+        ProductRankingItem margherita = new ProductRankingItem(1L, "Margherita", 10L, new BigDecimal("299.90"), 0.0);
+        Page<ProductRankingItem> page = new PageImpl<>(List.of(pepperoni, margherita), PAGEABLE, 2);
 
-        when(orderQueryFacade.getProductRanking(eq(1L), eq(FROM), eq(TO), eq(RankingSort.BY_QUANTITY), any()))
+        when(orderQueryFacade.getProductRanking(eq(1L), eq(FROM), eq(TO), any()))
                 .thenReturn(page);
         when(orderQueryFacade.getTotalRevenue(eq(1L), eq(FROM), eq(TO)))
-                .thenReturn(new BigDecimal("1499.50"));
+                .thenReturn(new BigDecimal("1799.40"));
 
         // WHEN
         ProductRankingResponse response =
                 productRankingService.getProductRanking(1L, FROM, TO, RankingSort.BY_QUANTITY, PAGEABLE);
 
         // THEN
-        assertEquals(1, response.content().size());
-        assertEquals(50L, response.content().getFirst().totalQuantity());
+        assertEquals(2, response.content().size());
+        assertEquals(50L, response.content().get(0).totalQuantity());
+        assertEquals(10L, response.content().get(1).totalQuantity());
+    }
+
+    @Test
+    void shouldSortByRevenueWhenSpecified() {
+        // GIVEN
+        ProductRankingItem margherita = new ProductRankingItem(1L, "Margherita", 10L, new BigDecimal("599.80"), 0.0);
+        ProductRankingItem pepperoni = new ProductRankingItem(2L, "Pepperoni", 20L, new BigDecimal("349.90"), 0.0);
+        Page<ProductRankingItem> page = new PageImpl<>(List.of(margherita, pepperoni), PAGEABLE, 2);
+
+        when(orderQueryFacade.getProductRanking(eq(null), eq(FROM), eq(TO), any()))
+                .thenReturn(page);
+        when(orderQueryFacade.getTotalRevenue(eq(null), eq(FROM), eq(TO)))
+                .thenReturn(new BigDecimal("949.70"));
+
+        // WHEN
+        ProductRankingResponse response =
+                productRankingService.getProductRanking(null, FROM, TO, RankingSort.BY_REVENUE, PAGEABLE);
+
+        // THEN
+        assertEquals(2, response.content().size());
+        assertEquals(new BigDecimal("599.80"), response.content().get(0).totalRevenue());
+        assertEquals(new BigDecimal("349.90"), response.content().get(1).totalRevenue());
     }
 
     @Test
@@ -132,7 +155,7 @@ class ProductRankingServiceTest {
         ProductRankingItem item = new ProductRankingItem(1L, "Margherita", 5L, new BigDecimal("149.95"), 0.0);
         Page<ProductRankingItem> page = new PageImpl<>(List.of(item), PAGEABLE, 1);
 
-        when(orderQueryFacade.getProductRanking(eq(null), eq(FROM), eq(TO), eq(RankingSort.BY_REVENUE), any()))
+        when(orderQueryFacade.getProductRanking(eq(null), eq(FROM), eq(TO), any()))
                 .thenReturn(page);
         when(orderQueryFacade.getTotalRevenue(eq(null), eq(FROM), eq(TO)))
                 .thenReturn(BigDecimal.ZERO);
@@ -152,7 +175,7 @@ class ProductRankingServiceTest {
                 new ProductRankingItem(1L, "Margherita", 15L, new BigDecimal("449.85"), 0.0)
         ), PAGEABLE, 1);
 
-        when(orderQueryFacade.getProductRanking(eq(5L), eq(FROM), eq(TO), eq(RankingSort.BY_REVENUE), any()))
+        when(orderQueryFacade.getProductRanking(eq(5L), eq(FROM), eq(TO), any()))
                 .thenReturn(page);
         when(orderQueryFacade.getTotalRevenue(eq(5L), eq(FROM), eq(TO)))
                 .thenReturn(new BigDecimal("449.85"));
