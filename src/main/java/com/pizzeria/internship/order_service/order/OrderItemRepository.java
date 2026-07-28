@@ -15,7 +15,7 @@ import java.util.UUID;
 @Repository
 interface OrderItemRepository extends JpaRepository<OrderItem, UUID> {
 
-    @Query("""
+    @Query(value = """
             SELECT new com.pizzeria.internship.order_service.admin.ProductRankingItem(
                 oi.productId,
                 oi.historicalName,
@@ -29,6 +29,14 @@ interface OrderItemRepository extends JpaRepository<OrderItem, UUID> {
             AND o.status != 'REJECTED'
             AND (:locationId IS NULL OR o.locationId = :locationId)
             GROUP BY oi.productId, oi.historicalName
+            """,
+            countQuery = """
+            SELECT COUNT(DISTINCT oi.productId)
+            FROM OrderItem oi
+            JOIN oi.order o
+            WHERE o.createdAt >= :from AND o.createdAt < :to
+            AND o.status != 'REJECTED'
+            AND (:locationId IS NULL OR o.locationId = :locationId)
             """)
     Page<ProductRankingItem> getProductRanking(
             @Param("locationId") Long locationId,
