@@ -1,6 +1,7 @@
 package com.pizzeria.internship.order_service.analytics;
 
-import com.pizzeria.internship.order_service.order.OrderRepository;
+import com.pizzeria.internship.order_service.order.DailyAggregation;
+import com.pizzeria.internship.order_service.order.OrderQueryFacade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -17,7 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DailyAnalyticsScheduler {
 
-    private final OrderRepository orderRepository;
+    private final OrderQueryFacade orderQueryFacade;
     private final DailyLocationStatsRepository statsRepository;
 
     @Scheduled(cron = "0 0 2 * * *")
@@ -29,20 +30,20 @@ public class DailyAnalyticsScheduler {
         Instant dayStart = targetDate.atStartOfDay(ZoneOffset.UTC).toInstant();
         Instant dayEnd = targetDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant();
 
-        List<OrderRepository.DailyAggregation> aggregations =
-                orderRepository.getDailyAggregations(dayStart, dayEnd);
+        List<DailyAggregation> aggregations =
+                orderQueryFacade.getDailyAggregations(dayStart, dayEnd);
 
         if (aggregations.isEmpty()) {
             log.info("No orders found for date: {}", targetDate);
             return;
         }
 
-        for (OrderRepository.DailyAggregation agg : aggregations) {
+        for (DailyAggregation agg : aggregations) {
             statsRepository.upsertStats(
                     targetDate,
-                    agg.getLocationId(),
-                    agg.getTotalRevenue(),
-                    agg.getOrderCount()
+                    agg.locationId(),
+                    agg.totalRevenue(),
+                    agg.orderCount()
             );
         }
 

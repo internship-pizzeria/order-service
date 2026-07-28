@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface OrderRepository extends JpaRepository<Order, UUID> {
+interface OrderRepository extends JpaRepository<Order, UUID> {
 
     List<Order> findByLocationId(Long locationId);
 
@@ -25,9 +25,10 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     List<Order> findByStatusAndCreatedAtBefore(Status status, Instant createdAt);
 
     @Query("""
-            SELECT o.locationId as locationId,
-                   COALESCE(SUM(o.totalPrice), 0) as totalRevenue,
-                   COUNT(o) as orderCount
+            SELECT new com.pizzeria.internship.order_service.order.DailyAggregation(
+                   o.locationId,
+                   COALESCE(SUM(o.totalPrice), 0),
+                   COUNT(o))
             FROM Order o
             WHERE o.createdAt >= :from AND o.createdAt < :to
             AND o.status != 'REJECTED'
@@ -37,10 +38,4 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             @Param("from") Instant from,
             @Param("to") Instant to
     );
-
-    interface DailyAggregation {
-        Long getLocationId();
-        BigDecimal getTotalRevenue();
-        long getOrderCount();
-    }
 }
