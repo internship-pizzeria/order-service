@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -30,7 +29,6 @@ public class ReportOrchestrator {
                 .orElseThrow(() -> new IllegalArgumentException("Report not found: " + id));
     }
 
-    @Transactional
     public ReportJob submit(ReportType type, ReportRequest request) {
         ReportJob job = ReportJob.builder()
                 .type(type)

@@ -36,10 +36,10 @@ public class ReportJob {
     @Column(nullable = false)
     private Instant toTime;
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String filePath;
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String errorMessage;
 
     @CreationTimestamp
