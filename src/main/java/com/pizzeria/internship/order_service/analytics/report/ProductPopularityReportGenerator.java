@@ -22,7 +22,7 @@ class ProductPopularityReportGenerator implements ReportGenerator {
 
     @Override
     public String getHeader() {
-        return "product_id,product_name,total_quantity,total_revenue,percentage_of_total";
+        return "product_id;product_name;total_quantity;total_revenue;percentage_of_total";
     }
 
     @Override
@@ -68,10 +68,10 @@ class ProductPopularityReportGenerator implements ReportGenerator {
         }
 
         return analyticsJdbcTemplate.queryForList(sql, params).stream()
-                .map(row -> escapeCsv(row.get("product_id")) + ","
-                        + escapeCsv(row.get("product_name")) + ","
-                        + escapeCsv(row.get("total_quantity")) + ","
-                        + escapeCsv(row.get("total_revenue")) + ","
+                .map(row -> escapeCsv(row.get("product_id")) + ";"
+                        + escapeCsv(row.get("product_name")) + ";"
+                        + escapeCsv(row.get("total_quantity")) + ";"
+                        + escapeCsv(row.get("total_revenue")) + ";"
                         + escapeCsv(row.get("percentage")))
                 .toList();
     }

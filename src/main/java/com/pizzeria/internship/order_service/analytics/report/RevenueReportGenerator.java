@@ -22,7 +22,7 @@ class RevenueReportGenerator implements ReportGenerator {
 
     @Override
     public String getHeader() {
-        return "location_id,total_revenue,order_count";
+        return "location_id;total_revenue;order_count";
     }
 
     @Override
@@ -62,8 +62,8 @@ class RevenueReportGenerator implements ReportGenerator {
         }
 
         return analyticsJdbcTemplate.queryForList(sql, params).stream()
-                .map(row -> escapeCsv(row.get("location_id")) + ","
-                        + escapeCsv(row.get("total_revenue")) + ","
+                .map(row -> escapeCsv(row.get("location_id")) + ";"
+                        + escapeCsv(row.get("total_revenue")) + ";"
                         + escapeCsv(row.get("order_count")))
                 .toList();
     }
