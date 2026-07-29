@@ -6,23 +6,23 @@ import org.springframework.stereotype.Component;
 import java.sql.Timestamp;
 import java.util.List;
 
-@Component
-class RevenueReportGenerator implements ReportGenerator {
 
+@Component
+class ProductPopularityReportGenerator implements ReportGenerator {
     private final JdbcTemplate analyticsJdbcTemplate;
 
-    RevenueReportGenerator(JdbcTemplate analyticsJdbcTemplate) {
+    ProductPopularityReportGenerator(JdbcTemplate analyticsJdbcTemplate) {
         this.analyticsJdbcTemplate = analyticsJdbcTemplate;
     }
 
     @Override
     public ReportType getType() {
-        return ReportType.REVENUE;
+        return ReportType.POPULARITY;
     }
 
     @Override
     public String getHeader() {
-        return "location_id,total_revenue,order_count";
+        return "product_id,product_name,total_quantity,total_revenue,percentage_of_total";
     }
 
     @Override
@@ -31,13 +31,16 @@ class RevenueReportGenerator implements ReportGenerator {
         Object[] params;
         if (request.locationId() != null) {
             sql = """
-                    SELECT location_id,
+                    SELECT product_id,
+                           product_name,
+                           SUM(quantity) AS total_quantity,
                            SUM(total_price) AS total_revenue,
-                           COUNT(DISTINCT order_id) AS order_count
+                           ROUND(SUM(total_price) * 100.0 /
+                                 NULLIF(SUM(SUM(total_price)) OVER(), 0), 1) AS percentage
                     FROM report_order_items
                     WHERE created_at >= ? AND created_at < ?
                     AND location_id = ?
-                    GROUP BY location_id
+                    GROUP BY product_id, product_name
                     ORDER BY total_revenue DESC
                     """;
             params = new Object[]{
@@ -47,12 +50,15 @@ class RevenueReportGenerator implements ReportGenerator {
             };
         } else {
             sql = """
-                    SELECT location_id,
+                    SELECT product_id,
+                           product_name,
+                           SUM(quantity) AS total_quantity,
                            SUM(total_price) AS total_revenue,
-                           COUNT(DISTINCT order_id) AS order_count
+                           ROUND(SUM(total_price) * 100.0 /
+                                 NULLIF(SUM(SUM(total_price)) OVER(), 0), 1) AS percentage
                     FROM report_order_items
                     WHERE created_at >= ? AND created_at < ?
-                    GROUP BY location_id
+                    GROUP BY product_id, product_name
                     ORDER BY total_revenue DESC
                     """;
             params = new Object[]{
@@ -62,9 +68,11 @@ class RevenueReportGenerator implements ReportGenerator {
         }
 
         return analyticsJdbcTemplate.queryForList(sql, params).stream()
-                .map(row -> escapeCsv(row.get("location_id")) + ","
+                .map(row -> escapeCsv(row.get("product_id")) + ","
+                        + escapeCsv(row.get("product_name")) + ","
+                        + escapeCsv(row.get("total_quantity")) + ","
                         + escapeCsv(row.get("total_revenue")) + ","
-                        + escapeCsv(row.get("order_count")))
+                        + escapeCsv(row.get("percentage")))
                 .toList();
     }
 

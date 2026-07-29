@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 import static org.springframework.transaction.event.TransactionPhase.AFTER_COMMIT;
 
@@ -48,12 +49,34 @@ class AnalyticsSyncHandler {
                         item.historicalPrice(),
                         itemTotal,
                         dto.status(),
-                        dto.createdAt()
+                        dto.createdAt() != null ? Timestamp.from(dto.createdAt()) : null
                 );
             }
             log.info("Synced order {} to analytics DB ({} items)", dto.orderId(), dto.items().size());
         } catch (Exception e) {
             log.error("Failed to sync order to analytics DB", e);
+        }
+    }
+
+    @Async
+    @TransactionalEventListener(phase = AFTER_COMMIT)
+    void onOrderStatusChanged(OrderEvent event) {
+        if (!"ORDER_STATUS_CHANGED".equals(event.eventType())) {
+            return;
+        }
+
+        try {
+            int updated = analyticsJdbcTemplate.update("""
+                    UPDATE report_order_items
+                    SET status = ?
+                    WHERE order_id = ?
+                    """,
+                    event.data().status(),
+                    event.data().orderId()
+            );
+            log.info("Updated status for order {} in analytics DB ({} rows)", event.data().orderId(), updated);
+        } catch (Exception e) {
+            log.error("Failed to update order status in analytics DB", e);
         }
     }
 }
