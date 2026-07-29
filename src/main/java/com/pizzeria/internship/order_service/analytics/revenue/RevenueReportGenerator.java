@@ -1,5 +1,8 @@
-package com.pizzeria.internship.order_service.analytics.report;
+package com.pizzeria.internship.order_service.analytics.revenue;
 
+import com.pizzeria.internship.order_service.analytics.infrastructure.ReportGenerator;
+import com.pizzeria.internship.order_service.analytics.infrastructure.ReportRequest;
+import com.pizzeria.internship.order_service.analytics.infrastructure.ReportType;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;

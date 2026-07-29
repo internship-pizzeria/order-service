@@ -1,4 +1,4 @@
-package com.pizzeria.internship.order_service.analytics;
+package com.pizzeria.internship.order_service.analytics.revenue;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;

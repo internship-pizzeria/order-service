@@ -1,12 +1,11 @@
 package com.pizzeria.internship.order_service.order;
 
-import com.pizzeria.internship.order_service.analytics.AnalyticsScope;
+import com.pizzeria.internship.order_service.analytics.scope.AnalyticsScope;
 import com.pizzeria.internship.order_service.admin.ProductRankingItem;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -16,11 +15,15 @@ import java.time.Instant;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class OrderQueryFacade {
 
     private final OrderRepository orderRepository;
-    private final @Qualifier("analyticsJdbcTemplate") JdbcTemplate analyticsJdbcTemplate;
+    private final JdbcTemplate analyticsJdbcTemplate;
+
+    OrderQueryFacade(OrderRepository orderRepository, @Qualifier("analyticsJdbcTemplate") JdbcTemplate analyticsJdbcTemplate) {
+        this.orderRepository = orderRepository;
+        this.analyticsJdbcTemplate = analyticsJdbcTemplate;
+    }
 
     public List<DailyAggregation> getDailyAggregations(Instant from, Instant to) {
         return orderRepository.getDailyAggregations(from, to);

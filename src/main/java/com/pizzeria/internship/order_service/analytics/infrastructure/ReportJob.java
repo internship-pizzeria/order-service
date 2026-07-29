@@ -1,4 +1,4 @@
-package com.pizzeria.internship.order_service.analytics.report;
+package com.pizzeria.internship.order_service.analytics.infrastructure;
 
 import lombok.*;
 

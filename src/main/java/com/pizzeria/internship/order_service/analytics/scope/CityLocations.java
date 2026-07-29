@@ -1,4 +1,4 @@
-package com.pizzeria.internship.order_service.analytics;
+package com.pizzeria.internship.order_service.analytics.scope;
 
 import java.util.List;
 import java.util.stream.Collectors;

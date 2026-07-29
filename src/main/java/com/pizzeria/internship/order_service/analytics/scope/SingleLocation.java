@@ -1,4 +1,4 @@
-package com.pizzeria.internship.order_service.analytics;
+package com.pizzeria.internship.order_service.analytics.scope;
 
 public record SingleLocation(Long locationId) implements AnalyticsScope {
 

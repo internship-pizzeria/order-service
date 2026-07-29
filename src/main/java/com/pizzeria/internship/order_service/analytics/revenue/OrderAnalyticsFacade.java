@@ -1,5 +1,6 @@
-package com.pizzeria.internship.order_service.analytics;
+package com.pizzeria.internship.order_service.analytics.revenue;
 
+import com.pizzeria.internship.order_service.analytics.scope.AnalyticsScope;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;

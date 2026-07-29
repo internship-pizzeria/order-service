@@ -1,11 +1,11 @@
 package com.pizzeria.internship.order_service.admin;
 
-import com.pizzeria.internship.order_service.analytics.AllLocations;
-import com.pizzeria.internship.order_service.analytics.AnalyticsScope;
-import com.pizzeria.internship.order_service.analytics.LocationPerformanceService;
-import com.pizzeria.internship.order_service.analytics.OrderAnalyticsFacade;
-import com.pizzeria.internship.order_service.analytics.ProductRankingService;
-import com.pizzeria.internship.order_service.analytics.SingleLocation;
+import com.pizzeria.internship.order_service.analytics.performance.LocationPerformanceService;
+import com.pizzeria.internship.order_service.analytics.popularity.ProductRankingService;
+import com.pizzeria.internship.order_service.analytics.revenue.OrderAnalyticsFacade;
+import com.pizzeria.internship.order_service.analytics.scope.AllLocations;
+import com.pizzeria.internship.order_service.analytics.scope.AnalyticsScope;
+import com.pizzeria.internship.order_service.analytics.scope.SingleLocation;
 import com.pizzeria.internship.order_service.analytics.fulfillment.FulfillmentMetricsResponse;
 import com.pizzeria.internship.order_service.analytics.fulfillment.FulfillmentService;
 import lombok.RequiredArgsConstructor;
