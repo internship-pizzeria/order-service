@@ -2,7 +2,7 @@ package com.pizzeria.internship.order_service.order;
 
 import java.math.BigDecimal;
 
-record OrderItemResponseDto(Long productId, String historicalName, BigDecimal historicalPrice, Integer quantity) {
+public record OrderItemResponseDto(Long productId, String historicalName, BigDecimal historicalPrice, Integer quantity) {
 
     static OrderItemResponseDto fromOrderItem(OrderItem item) {
         return new OrderItemResponseDto(
