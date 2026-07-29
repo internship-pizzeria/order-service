@@ -35,12 +35,6 @@ public interface AdminAnalyticsDtos {
             List<TrendDataPoint> trends
     ) {}
 
-    // Task 6: Order Fulfillment Time Analytics
-    record FulfillmentMetricsResponse(
-            double averageTimeToDeliverMinutes,
-            double medianTimeToDeliverMinutes
-    ) {}
-
     // Task 8: Cross-Location Comparison
     record LocationMetrics(
             Long locationId,

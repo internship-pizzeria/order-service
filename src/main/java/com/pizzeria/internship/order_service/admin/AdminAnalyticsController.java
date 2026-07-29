@@ -2,6 +2,8 @@ package com.pizzeria.internship.order_service.admin;
 
 import com.pizzeria.internship.order_service.analytics.OrderAnalyticsFacade;
 import com.pizzeria.internship.order_service.analytics.ProductRankingService;
+import com.pizzeria.internship.order_service.analytics.fulfillment.FulfillmentMetricsResponse;
+import com.pizzeria.internship.order_service.analytics.fulfillment.FulfillmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -22,6 +24,7 @@ class AdminAnalyticsController {
     // =========================================================================
     private final OrderAnalyticsFacade orderAnalyticsFacade;
     private final ProductRankingService productRankingService;
+    private final FulfillmentService fulfillmentService;
 
     @GetMapping("/revenue")
     public RevenueSummaryResponse getRevenueSummary(
@@ -96,11 +99,10 @@ class AdminAnalyticsController {
      * utilizing the status_audit history table.
      */
     @GetMapping("/fulfillment")
-    public AdminAnalyticsDtos.FulfillmentMetricsResponse getFulfillmentMetrics(
+    public FulfillmentMetricsResponse getFulfillmentMetrics(
             @RequestParam(required = false) Long locationId,
             @RequestParam Instant from,
             @RequestParam Instant to) {
-        // TODO (Task 6): Calculate duration differences between NEW and DELIVERED statuses from StatusAudit
-        return null;
+        return fulfillmentService.calculateMetrics(locationId, from, to);
     }
 }
