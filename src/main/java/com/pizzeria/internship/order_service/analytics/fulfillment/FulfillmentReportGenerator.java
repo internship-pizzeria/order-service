@@ -30,7 +30,7 @@ class FulfillmentReportGenerator implements ReportGenerator {
     @Override
     public List<String> generate(ReportRequest request) {
         FulfillmentMetricsResponse metrics = fulfillmentService.calculateMetrics(
-                request.locationId(), request.from(), request.to());
+                request.scope().extractLocationId(), request.from(), request.to());
 
         List<String> rows = new ArrayList<>();
 

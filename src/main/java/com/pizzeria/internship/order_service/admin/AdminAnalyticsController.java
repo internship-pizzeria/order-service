@@ -1,10 +1,20 @@
 package com.pizzeria.internship.order_service.admin;
 
-import com.pizzeria.internship.order_service.analytics.*;
+import com.pizzeria.internship.order_service.analytics.AllLocations;
+import com.pizzeria.internship.order_service.analytics.AnalyticsScope;
+import com.pizzeria.internship.order_service.analytics.LocationPerformanceService;
+import com.pizzeria.internship.order_service.analytics.OrderAnalyticsFacade;
+import com.pizzeria.internship.order_service.analytics.ProductRankingService;
+import com.pizzeria.internship.order_service.analytics.SingleLocation;
+import com.pizzeria.internship.order_service.analytics.fulfillment.FulfillmentMetricsResponse;
+import com.pizzeria.internship.order_service.analytics.fulfillment.FulfillmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import java.time.Instant;
 
 @RestController
