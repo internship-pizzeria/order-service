@@ -27,45 +27,22 @@ class ProductPopularityReportGenerator implements ReportGenerator {
 
     @Override
     public List<String> generate(ReportRequest request) {
-        String sql;
-        Object[] params;
-        if (request.locationId() != null) {
-            sql = """
-                    SELECT product_id,
-                           product_name,
-                           SUM(quantity) AS total_quantity,
-                           SUM(total_price) AS total_revenue,
-                           ROUND(SUM(total_price) * 100.0 /
-                                 NULLIF(SUM(SUM(total_price)) OVER(), 0), 1) AS percentage
-                    FROM report_order_items
-                    WHERE created_at >= ? AND created_at < ?
-                    AND location_id = ?
-                    GROUP BY product_id, product_name
-                    ORDER BY total_revenue DESC
-                    """;
-            params = new Object[]{
-                    Timestamp.from(request.from()),
-                    Timestamp.from(request.to()),
-                    request.locationId()
-            };
-        } else {
-            sql = """
-                    SELECT product_id,
-                           product_name,
-                           SUM(quantity) AS total_quantity,
-                           SUM(total_price) AS total_revenue,
-                           ROUND(SUM(total_price) * 100.0 /
-                                 NULLIF(SUM(SUM(total_price)) OVER(), 0), 1) AS percentage
-                    FROM report_order_items
-                    WHERE created_at >= ? AND created_at < ?
-                    GROUP BY product_id, product_name
-                    ORDER BY total_revenue DESC
-                    """;
-            params = new Object[]{
-                    Timestamp.from(request.from()),
-                    Timestamp.from(request.to())
-            };
-        }
+        Object[] baseParams = new Object[]{
+                Timestamp.from(request.from()),
+                Timestamp.from(request.to())
+        };
+        Object[] params = concat(baseParams, request.scope().sqlParams());
+
+        String sql = "SELECT product_id, product_name, " +
+                     "SUM(quantity) AS total_quantity, " +
+                     "SUM(total_price) AS total_revenue, " +
+                     "ROUND(SUM(total_price) * 100.0 / " +
+                     "NULLIF(SUM(SUM(total_price)) OVER(), 0), 1) AS percentage " +
+                     "FROM report_order_items " +
+                     "WHERE created_at >= ? AND created_at < ? " +
+                     request.scope().sqlSuffix() + " " +
+                     "GROUP BY product_id, product_name " +
+                     "ORDER BY total_revenue DESC";
 
         return analyticsJdbcTemplate.queryForList(sql, params).stream()
                 .map(row -> escapeCsv(row.get("product_id")) + ";"
@@ -74,6 +51,13 @@ class ProductPopularityReportGenerator implements ReportGenerator {
                         + escapeCsv(row.get("total_revenue")) + ";"
                         + escapeCsv(row.get("percentage")))
                 .toList();
+    }
+
+    private static Object[] concat(Object[] a, Object[] b) {
+        Object[] result = new Object[a.length + b.length];
+        System.arraycopy(a, 0, result, 0, a.length);
+        System.arraycopy(b, 0, result, a.length, b.length);
+        return result;
     }
 
     private static String escapeCsv(Object value) {

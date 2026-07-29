@@ -3,6 +3,7 @@ package com.pizzeria.internship.order_service.analytics;
 import com.pizzeria.internship.order_service.admin.ProductRankingItem;
 import com.pizzeria.internship.order_service.admin.ProductRankingResponse;
 import com.pizzeria.internship.order_service.admin.RankingSort;
+import com.pizzeria.internship.order_service.analytics.AnalyticsScope;
 import com.pizzeria.internship.order_service.order.OrderQueryFacade;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,15 +41,16 @@ class ProductRankingServiceTest {
     @Test
     void shouldReturnEmptyResponseWhenNoProducts() {
         // GIVEN
+        AnalyticsScope scope = new AllLocations();
         Page<ProductRankingItem> emptyPage = new PageImpl<>(Collections.emptyList(), PAGEABLE, 0);
-        when(orderQueryFacade.getProductRanking(eq(null), eq(FROM), eq(TO), any()))
+        when(orderQueryFacade.getProductRanking(eq(scope), eq(FROM), eq(TO), any()))
                 .thenReturn(emptyPage);
-        when(orderQueryFacade.getTotalRevenue(eq(null), eq(FROM), eq(TO)))
+        when(orderQueryFacade.getTotalRevenue(eq(scope), eq(FROM), eq(TO)))
                 .thenReturn(BigDecimal.ZERO);
 
         // WHEN
         ProductRankingResponse response =
-                productRankingService.getProductRanking(null, FROM, TO, RankingSort.BY_REVENUE, PAGEABLE);
+                productRankingService.getProductRanking(scope, FROM, TO, RankingSort.BY_REVENUE, PAGEABLE);
 
         // THEN
         assertTrue(response.content().isEmpty());
@@ -58,17 +60,18 @@ class ProductRankingServiceTest {
     @Test
     void shouldReturnSingleProductWith100Percent() {
         // GIVEN
+        AnalyticsScope scope = new AllLocations();
         ProductRankingItem item = new ProductRankingItem(1L, "Margherita", 10L, new BigDecimal("299.90"), 0.0);
         Page<ProductRankingItem> page = new PageImpl<>(List.of(item), PAGEABLE, 1);
 
-        when(orderQueryFacade.getProductRanking(eq(null), eq(FROM), eq(TO), any()))
+        when(orderQueryFacade.getProductRanking(eq(scope), eq(FROM), eq(TO), any()))
                 .thenReturn(page);
-        when(orderQueryFacade.getTotalRevenue(eq(null), eq(FROM), eq(TO)))
+        when(orderQueryFacade.getTotalRevenue(eq(scope), eq(FROM), eq(TO)))
                 .thenReturn(new BigDecimal("299.90"));
 
         // WHEN
         ProductRankingResponse response =
-                productRankingService.getProductRanking(null, FROM, TO, RankingSort.BY_REVENUE, PAGEABLE);
+                productRankingService.getProductRanking(scope, FROM, TO, RankingSort.BY_REVENUE, PAGEABLE);
 
         // THEN
         assertEquals(1, response.content().size());
@@ -84,19 +87,20 @@ class ProductRankingServiceTest {
     @Test
     void shouldCalculatePercentagesForMultipleProducts() {
         // GIVEN
+        AnalyticsScope scope = new AllLocations();
         ProductRankingItem margherita = new ProductRankingItem(1L, "Margherita", 20L, new BigDecimal("599.80"), 0.0);
         ProductRankingItem pepperoni = new ProductRankingItem(2L, "Pepperoni", 10L, new BigDecimal("349.90"), 0.0);
         ProductRankingItem hawaiian = new ProductRankingItem(3L, "Hawaiian", 5L, new BigDecimal("149.95"), 0.0);
         Page<ProductRankingItem> page = new PageImpl<>(List.of(margherita, pepperoni, hawaiian), PAGEABLE, 3);
 
-        when(orderQueryFacade.getProductRanking(eq(null), eq(FROM), eq(TO), any()))
+        when(orderQueryFacade.getProductRanking(eq(scope), eq(FROM), eq(TO), any()))
                 .thenReturn(page);
-        when(orderQueryFacade.getTotalRevenue(eq(null), eq(FROM), eq(TO)))
+        when(orderQueryFacade.getTotalRevenue(eq(scope), eq(FROM), eq(TO)))
                 .thenReturn(new BigDecimal("1099.65"));
 
         // WHEN
         ProductRankingResponse response =
-                productRankingService.getProductRanking(null, FROM, TO, RankingSort.BY_REVENUE, PAGEABLE);
+                productRankingService.getProductRanking(scope, FROM, TO, RankingSort.BY_REVENUE, PAGEABLE);
 
         // THEN
         assertEquals(3, response.content().size());
@@ -108,18 +112,19 @@ class ProductRankingServiceTest {
     @Test
     void shouldSortByQuantityWhenSpecified() {
         // GIVEN
+        AnalyticsScope scope = new SingleLocation(1L);
         ProductRankingItem pepperoni = new ProductRankingItem(2L, "Pepperoni", 50L, new BigDecimal("1499.50"), 0.0);
         ProductRankingItem margherita = new ProductRankingItem(1L, "Margherita", 10L, new BigDecimal("299.90"), 0.0);
         Page<ProductRankingItem> page = new PageImpl<>(List.of(pepperoni, margherita), PAGEABLE, 2);
 
-        when(orderQueryFacade.getProductRanking(eq(1L), eq(FROM), eq(TO), any()))
+        when(orderQueryFacade.getProductRanking(eq(scope), eq(FROM), eq(TO), any()))
                 .thenReturn(page);
-        when(orderQueryFacade.getTotalRevenue(eq(1L), eq(FROM), eq(TO)))
+        when(orderQueryFacade.getTotalRevenue(eq(scope), eq(FROM), eq(TO)))
                 .thenReturn(new BigDecimal("1799.40"));
 
         // WHEN
         ProductRankingResponse response =
-                productRankingService.getProductRanking(1L, FROM, TO, RankingSort.BY_QUANTITY, PAGEABLE);
+                productRankingService.getProductRanking(scope, FROM, TO, RankingSort.BY_QUANTITY, PAGEABLE);
 
         // THEN
         assertEquals(2, response.content().size());
@@ -130,18 +135,19 @@ class ProductRankingServiceTest {
     @Test
     void shouldSortByRevenueWhenSpecified() {
         // GIVEN
+        AnalyticsScope scope = new AllLocations();
         ProductRankingItem margherita = new ProductRankingItem(1L, "Margherita", 10L, new BigDecimal("599.80"), 0.0);
         ProductRankingItem pepperoni = new ProductRankingItem(2L, "Pepperoni", 20L, new BigDecimal("349.90"), 0.0);
         Page<ProductRankingItem> page = new PageImpl<>(List.of(margherita, pepperoni), PAGEABLE, 2);
 
-        when(orderQueryFacade.getProductRanking(eq(null), eq(FROM), eq(TO), any()))
+        when(orderQueryFacade.getProductRanking(eq(scope), eq(FROM), eq(TO), any()))
                 .thenReturn(page);
-        when(orderQueryFacade.getTotalRevenue(eq(null), eq(FROM), eq(TO)))
+        when(orderQueryFacade.getTotalRevenue(eq(scope), eq(FROM), eq(TO)))
                 .thenReturn(new BigDecimal("949.70"));
 
         // WHEN
         ProductRankingResponse response =
-                productRankingService.getProductRanking(null, FROM, TO, RankingSort.BY_REVENUE, PAGEABLE);
+                productRankingService.getProductRanking(scope, FROM, TO, RankingSort.BY_REVENUE, PAGEABLE);
 
         // THEN
         assertEquals(2, response.content().size());
@@ -152,17 +158,18 @@ class ProductRankingServiceTest {
     @Test
     void shouldReturnZeroPercentageWhenTotalRevenueIsZero() {
         // GIVEN
+        AnalyticsScope scope = new AllLocations();
         ProductRankingItem item = new ProductRankingItem(1L, "Margherita", 5L, new BigDecimal("149.95"), 0.0);
         Page<ProductRankingItem> page = new PageImpl<>(List.of(item), PAGEABLE, 1);
 
-        when(orderQueryFacade.getProductRanking(eq(null), eq(FROM), eq(TO), any()))
+        when(orderQueryFacade.getProductRanking(eq(scope), eq(FROM), eq(TO), any()))
                 .thenReturn(page);
-        when(orderQueryFacade.getTotalRevenue(eq(null), eq(FROM), eq(TO)))
+        when(orderQueryFacade.getTotalRevenue(eq(scope), eq(FROM), eq(TO)))
                 .thenReturn(BigDecimal.ZERO);
 
         // WHEN
         ProductRankingResponse response =
-                productRankingService.getProductRanking(null, FROM, TO, RankingSort.BY_REVENUE, PAGEABLE);
+                productRankingService.getProductRanking(scope, FROM, TO, RankingSort.BY_REVENUE, PAGEABLE);
 
         // THEN
         assertEquals(0.0, response.content().getFirst().percentageOfTotal(), 0.1);
@@ -171,18 +178,19 @@ class ProductRankingServiceTest {
     @Test
     void shouldFilterByLocationId() {
         // GIVEN
+        AnalyticsScope scope = new SingleLocation(5L);
         Page<ProductRankingItem> page = new PageImpl<>(List.of(
                 new ProductRankingItem(1L, "Margherita", 15L, new BigDecimal("449.85"), 0.0)
         ), PAGEABLE, 1);
 
-        when(orderQueryFacade.getProductRanking(eq(5L), eq(FROM), eq(TO), any()))
+        when(orderQueryFacade.getProductRanking(eq(scope), eq(FROM), eq(TO), any()))
                 .thenReturn(page);
-        when(orderQueryFacade.getTotalRevenue(eq(5L), eq(FROM), eq(TO)))
+        when(orderQueryFacade.getTotalRevenue(eq(scope), eq(FROM), eq(TO)))
                 .thenReturn(new BigDecimal("449.85"));
 
         // WHEN
         ProductRankingResponse response =
-                productRankingService.getProductRanking(5L, FROM, TO, RankingSort.BY_REVENUE, PAGEABLE);
+                productRankingService.getProductRanking(scope, FROM, TO, RankingSort.BY_REVENUE, PAGEABLE);
 
         // THEN
         assertEquals(1, response.content().size());

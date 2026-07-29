@@ -17,21 +17,17 @@ public class OrderAnalyticsFacade {
         this.analyticsJdbcTemplate = analyticsJdbcTemplate;
     }
 
-    public RevenueResult calculateRevenue(Long locationId, Instant from, Instant to) {
-        String whereClause;
-        Object[] params;
-        if (locationId != null) {
-            whereClause = "WHERE created_at >= ? AND created_at < ? AND location_id = ?";
-            params = new Object[]{Timestamp.from(from), Timestamp.from(to), locationId};
-        } else {
-            whereClause = "WHERE created_at >= ? AND created_at < ?";
-            params = new Object[]{Timestamp.from(from), Timestamp.from(to)};
-        }
+    public RevenueResult calculateRevenue(AnalyticsScope scope, Instant from, Instant to) {
+        Object[] params = concat(
+                new Object[]{Timestamp.from(from), Timestamp.from(to)},
+                scope.sqlParams()
+        );
 
         var row = analyticsJdbcTemplate.queryForMap(
                 "SELECT COALESCE(SUM(total_price), 0) AS total_revenue, " +
                 "COUNT(DISTINCT order_id) AS order_count " +
-                "FROM report_order_items " + whereClause, params);
+                "FROM report_order_items WHERE created_at >= ? AND created_at < ? " +
+                scope.sqlSuffix(), params);
 
         BigDecimal totalRevenue = (BigDecimal) row.get("total_revenue");
         long orderCount = ((Number) row.get("order_count")).longValue();
@@ -43,6 +39,13 @@ public class OrderAnalyticsFacade {
         }
 
         return new RevenueResult(totalRevenue, orderCount, averageOrderValue);
+    }
+
+    private static Object[] concat(Object[] a, Object[] b) {
+        Object[] result = new Object[a.length + b.length];
+        System.arraycopy(a, 0, result, 0, a.length);
+        System.arraycopy(b, 0, result, a.length, b.length);
+        return result;
     }
 
     public record RevenueResult(
