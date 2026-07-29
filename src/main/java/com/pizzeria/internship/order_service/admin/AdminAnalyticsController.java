@@ -1,10 +1,6 @@
 package com.pizzeria.internship.order_service.admin;
 
-import com.pizzeria.internship.order_service.analytics.AllLocations;
-import com.pizzeria.internship.order_service.analytics.AnalyticsScope;
-import com.pizzeria.internship.order_service.analytics.OrderAnalyticsFacade;
-import com.pizzeria.internship.order_service.analytics.ProductRankingService;
-import com.pizzeria.internship.order_service.analytics.SingleLocation;
+import com.pizzeria.internship.order_service.analytics.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -18,6 +14,7 @@ class AdminAnalyticsController {
 
     private final OrderAnalyticsFacade orderAnalyticsFacade;
     private final ProductRankingService productRankingService;
+    private final LocationPerformanceService locationPerformanceService;
 
     @GetMapping("/revenue")
     public RevenueSummaryResponse getRevenueSummary(
@@ -47,13 +44,12 @@ class AdminAnalyticsController {
     }
 
     @GetMapping("/locations")
-    public AdminAnalyticsDtos.LocationPerformancePageResponse getLocationPerformance(
+    public LocationPerformancePageResponse getLocationPerformance(
             @RequestParam(defaultValue = "REVENUE") String metric,
             @RequestParam Instant from,
             @RequestParam Instant to,
             @PageableDefault(size = 20) Pageable pageable) {
-        // TODO (Task 8): Aggregate location metrics, paginate, then fetch city names via batch HTTP call
-        return null;
+        return locationPerformanceService.getLocationPerformance(metric, from, to, pageable);
     }
 
     @GetMapping("/peak-hours")
