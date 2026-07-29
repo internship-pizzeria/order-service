@@ -1,5 +1,6 @@
 package com.pizzeria.internship.order_service.analytics;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +14,7 @@ public class OrderAnalyticsFacade {
 
     private final JdbcTemplate analyticsJdbcTemplate;
 
-    public OrderAnalyticsFacade(JdbcTemplate analyticsJdbcTemplate) {
+    public OrderAnalyticsFacade(@Qualifier("analyticsJdbcTemplate") JdbcTemplate analyticsJdbcTemplate) {
         this.analyticsJdbcTemplate = analyticsJdbcTemplate;
     }
 

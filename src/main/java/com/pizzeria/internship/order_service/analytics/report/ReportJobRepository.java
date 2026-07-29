@@ -1,5 +1,6 @@
 package com.pizzeria.internship.order_service.analytics.report;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -15,7 +16,7 @@ class ReportJobRepository {
 
     private final JdbcTemplate analyticsJdbcTemplate;
 
-    ReportJobRepository(JdbcTemplate analyticsJdbcTemplate) {
+    ReportJobRepository(@Qualifier("analyticsJdbcTemplate") JdbcTemplate analyticsJdbcTemplate) {
         this.analyticsJdbcTemplate = analyticsJdbcTemplate;
     }
 

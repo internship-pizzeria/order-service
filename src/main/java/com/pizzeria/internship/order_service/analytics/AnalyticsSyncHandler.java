@@ -3,6 +3,7 @@ package com.pizzeria.internship.order_service.analytics;
 import com.pizzeria.internship.order_service.order.OrderEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -20,7 +21,7 @@ class AnalyticsSyncHandler {
 
     private final JdbcTemplate analyticsJdbcTemplate;
 
-    AnalyticsSyncHandler(JdbcTemplate analyticsJdbcTemplate) {
+    AnalyticsSyncHandler(@Qualifier("analyticsJdbcTemplate") JdbcTemplate analyticsJdbcTemplate) {
         this.analyticsJdbcTemplate = analyticsJdbcTemplate;
     }
 

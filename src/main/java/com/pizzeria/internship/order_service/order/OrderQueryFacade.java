@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +20,7 @@ import java.util.List;
 public class OrderQueryFacade {
 
     private final OrderRepository orderRepository;
-    private final JdbcTemplate analyticsJdbcTemplate;
+    private final @Qualifier("analyticsJdbcTemplate") JdbcTemplate analyticsJdbcTemplate;
 
     public List<DailyAggregation> getDailyAggregations(Instant from, Instant to) {
         return orderRepository.getDailyAggregations(from, to);

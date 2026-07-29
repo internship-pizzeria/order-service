@@ -44,6 +44,12 @@ public class AnalyticsDataSourceConfig {
         return ds;
     }
 
+    @Primary
+    @Bean
+    JdbcTemplate jdbcTemplate(DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
+    }
+
     @Bean
     JdbcTemplate analyticsJdbcTemplate(@Qualifier("analyticsDataSource") DataSource analyticsDataSource) {
         return new JdbcTemplate(analyticsDataSource);

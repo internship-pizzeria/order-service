@@ -14,6 +14,7 @@ class AdminAnalyticsController {
 
     private final OrderAnalyticsFacade orderAnalyticsFacade;
     private final ProductRankingService productRankingService;
+    private final FulfillmentService fulfillmentService;
     private final LocationPerformanceService locationPerformanceService;
 
     @GetMapping("/revenue")
@@ -72,12 +73,11 @@ class AdminAnalyticsController {
     }
 
     @GetMapping("/fulfillment")
-    public AdminAnalyticsDtos.FulfillmentMetricsResponse getFulfillmentMetrics(
+    public FulfillmentMetricsResponse getFulfillmentMetrics(
             @RequestParam(required = false) Long locationId,
             @RequestParam Instant from,
             @RequestParam Instant to) {
-        // TODO (Task 6): Calculate duration differences between NEW and DELIVERED statuses from StatusAudit
-        return null;
+        return fulfillmentService.calculateMetrics(locationId, from, to);
     }
 
     static AnalyticsScope resolveScope(Long locationId) {

@@ -1,5 +1,6 @@
 package com.pizzeria.internship.order_service.analytics.report;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
@@ -11,7 +12,7 @@ import java.util.List;
 class ProductPopularityReportGenerator implements ReportGenerator {
     private final JdbcTemplate analyticsJdbcTemplate;
 
-    ProductPopularityReportGenerator(JdbcTemplate analyticsJdbcTemplate) {
+    ProductPopularityReportGenerator(@Qualifier("analyticsJdbcTemplate") JdbcTemplate analyticsJdbcTemplate) {
         this.analyticsJdbcTemplate = analyticsJdbcTemplate;
     }
 
