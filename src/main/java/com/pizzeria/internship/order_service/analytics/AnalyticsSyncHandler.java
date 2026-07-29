@@ -56,4 +56,26 @@ class AnalyticsSyncHandler {
             log.error("Failed to sync order to analytics DB", e);
         }
     }
+
+    @Async
+    @TransactionalEventListener(phase = AFTER_COMMIT)
+    void onOrderStatusChanged(OrderEvent event) {
+        if (!"ORDER_STATUS_CHANGED".equals(event.eventType())) {
+            return;
+        }
+
+        try {
+            int updated = analyticsJdbcTemplate.update("""
+                    UPDATE report_order_items
+                    SET status = ?
+                    WHERE order_id = ?
+                    """,
+                    event.data().status(),
+                    event.data().orderId()
+            );
+            log.info("Updated status for order {} in analytics DB ({} rows)", event.data().orderId(), updated);
+        } catch (Exception e) {
+            log.error("Failed to update order status in analytics DB", e);
+        }
+    }
 }
