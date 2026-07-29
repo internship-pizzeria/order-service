@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -27,21 +28,25 @@ class ReportController {
     private final ReportOrchestrator orchestrator;
 
     @PostMapping
-    ResponseEntity<ReportJobResponse> createReport(
-            @RequestParam ReportType type,
+    ResponseEntity<List<ReportJobResponse>> createReport(
+            @RequestParam(required = false) List<ReportType> type,
             @RequestParam(required = false) Long locationId,
             @RequestParam Instant from,
             @RequestParam Instant to) {
 
-        AnalyticsScope scope = AdminAnalyticsController.resolveScope(locationId);
-        ReportRequest request = new ReportRequest(scope, from, to);
-        ReportJob job = orchestrator.submit(type, request);
-        orchestrator.execute(job.getId());
+        if (type == null || type.isEmpty()) {
+            type = List.of(ReportType.values());
+        }
 
-        ReportJobResponse response = ReportJobResponse.from(job);
-        return ResponseEntity.created(
-                        URI.create("/api/v1/admin/reports/" + job.getId()))
-                .body(response);
+        List<ReportJobResponse> jobs = type.stream().map(t -> {
+            AnalyticsScope scope = AdminAnalyticsController.resolveScope(locationId);
+            ReportRequest request = new ReportRequest(scope, from, to);
+            ReportJob job = orchestrator.submit(t, request);
+            orchestrator.execute(job.getId());
+            return ReportJobResponse.from(job);
+        }).toList();
+
+        return ResponseEntity.ok(jobs);
     }
 
     @GetMapping("/{id}/status")

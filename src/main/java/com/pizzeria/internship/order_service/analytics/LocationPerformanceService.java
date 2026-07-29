@@ -3,7 +3,7 @@ package com.pizzeria.internship.order_service.analytics;
 import com.pizzeria.internship.order_service.admin.LocationMetrics;
 import com.pizzeria.internship.order_service.admin.LocationPerformancePageResponse;
 import com.pizzeria.internship.order_service.location.LocationClient;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -14,11 +14,15 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-@RequiredArgsConstructor
 public class LocationPerformanceService {
 
     private final JdbcTemplate analyticsJdbcTemplate;
     private final LocationClient locationClient;
+
+    LocationPerformanceService(@Qualifier("analyticsJdbcTemplate") JdbcTemplate analyticsJdbcTemplate, LocationClient locationClient) {
+        this.analyticsJdbcTemplate = analyticsJdbcTemplate;
+        this.locationClient = locationClient;
+    }
 
     public LocationPerformancePageResponse getLocationPerformance(
             String metric, Instant from, Instant to, Pageable pageable) {
