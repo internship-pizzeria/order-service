@@ -1,6 +1,6 @@
 package com.pizzeria.internship.order_service.order;
 
-import com.pizzeria.internship.order_service.analytics.AnalyticsScope;
+import com.pizzeria.internship.order_service.analytics.scope.AnalyticsScope;
 import com.pizzeria.internship.order_service.admin.ProductRankingItem;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;

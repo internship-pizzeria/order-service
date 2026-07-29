@@ -1,5 +1,7 @@
-package com.pizzeria.internship.order_service.analytics;
+package com.pizzeria.internship.order_service.analytics.revenue;
 
+import com.pizzeria.internship.order_service.analytics.scope.AllLocations;
+import com.pizzeria.internship.order_service.analytics.scope.SingleLocation;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

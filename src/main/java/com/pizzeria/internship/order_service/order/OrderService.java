@@ -1,6 +1,6 @@
 package com.pizzeria.internship.order_service.order;
 
-import com.pizzeria.internship.order_service.analytics.RevenueCacheService;
+import com.pizzeria.internship.order_service.analytics.revenue.RevenueCacheService;
 import com.pizzeria.internship.order_service.product.Product;
 import com.pizzeria.internship.order_service.product.ProductClient;
 import com.pizzeria.internship.order_service.user.UserContext;

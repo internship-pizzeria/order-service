@@ -1,4 +1,4 @@
-package com.pizzeria.internship.order_service.analytics;
+package com.pizzeria.internship.order_service.analytics.sync;
 
 import com.pizzeria.internship.order_service.order.OrderEvent;
 import org.slf4j.Logger;

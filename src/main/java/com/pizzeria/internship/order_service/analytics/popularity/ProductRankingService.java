@@ -1,8 +1,9 @@
-package com.pizzeria.internship.order_service.analytics;
+package com.pizzeria.internship.order_service.analytics.popularity;
 
 import com.pizzeria.internship.order_service.admin.ProductRankingItem;
 import com.pizzeria.internship.order_service.admin.ProductRankingResponse;
 import com.pizzeria.internship.order_service.admin.RankingSort;
+import com.pizzeria.internship.order_service.analytics.scope.AnalyticsScope;
 import com.pizzeria.internship.order_service.order.OrderQueryFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

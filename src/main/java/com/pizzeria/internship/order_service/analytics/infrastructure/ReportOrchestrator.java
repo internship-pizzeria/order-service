@@ -1,7 +1,8 @@
-package com.pizzeria.internship.order_service.analytics.report;
+package com.pizzeria.internship.order_service.analytics.infrastructure;
 
-import com.pizzeria.internship.order_service.analytics.AllLocations;
-import com.pizzeria.internship.order_service.analytics.SingleLocation;
+import com.pizzeria.internship.order_service.analytics.scope.AllLocations;
+import com.pizzeria.internship.order_service.analytics.scope.AnalyticsScope;
+import com.pizzeria.internship.order_service.analytics.scope.SingleLocation;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,7 +75,7 @@ public class ReportOrchestrator {
     }
 
     private static ReportRequest buildRequest(ReportJob job) {
-        com.pizzeria.internship.order_service.analytics.AnalyticsScope scope =
+        AnalyticsScope scope =
                 job.getLocationId() != null
                         ? new SingleLocation(job.getLocationId())
                         : new AllLocations();

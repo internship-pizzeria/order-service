@@ -1,5 +1,8 @@
-package com.pizzeria.internship.order_service.analytics.report;
+package com.pizzeria.internship.order_service.analytics.revenue;
 
+import com.pizzeria.internship.order_service.analytics.infrastructure.ReportGenerator;
+import com.pizzeria.internship.order_service.analytics.infrastructure.ReportRequest;
+import com.pizzeria.internship.order_service.analytics.infrastructure.ReportType;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -8,17 +11,17 @@ import java.sql.Timestamp;
 import java.util.List;
 
 @Component
-class LocationPerformanceReportGenerator implements ReportGenerator {
+class RevenueReportGenerator implements ReportGenerator {
 
     private final JdbcTemplate analyticsJdbcTemplate;
 
-    LocationPerformanceReportGenerator(@Qualifier("analyticsJdbcTemplate") JdbcTemplate analyticsJdbcTemplate) {
+    RevenueReportGenerator(@Qualifier("analyticsJdbcTemplate") JdbcTemplate analyticsJdbcTemplate) {
         this.analyticsJdbcTemplate = analyticsJdbcTemplate;
     }
 
     @Override
     public ReportType getType() {
-        return ReportType.LOCATION_PERFORMANCE;
+        return ReportType.REVENUE;
     }
 
     @Override
@@ -35,13 +38,13 @@ class LocationPerformanceReportGenerator implements ReportGenerator {
         Object[] params = concat(baseParams, request.scope().sqlParams());
 
         String sql = "SELECT location_id, " +
-                "SUM(total_price) AS total_revenue, " +
-                "COUNT(DISTINCT order_id) AS order_count " +
-                "FROM report_order_items " +
-                "WHERE created_at >= ? AND created_at < ? " +
-                request.scope().sqlSuffix() + " " +
-                "GROUP BY location_id " +
-                "ORDER BY total_revenue DESC";
+                     "SUM(total_price) AS total_revenue, " +
+                     "COUNT(DISTINCT order_id) AS order_count " +
+                     "FROM report_order_items " +
+                     "WHERE created_at >= ? AND created_at < ? " +
+                     request.scope().sqlSuffix() + " " +
+                     "GROUP BY location_id " +
+                     "ORDER BY total_revenue DESC";
 
         return analyticsJdbcTemplate.queryForList(sql, params).stream()
                 .map(row -> escapeCsv(row.get("location_id")) + ";"

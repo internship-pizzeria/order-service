@@ -1,9 +1,9 @@
 package com.pizzeria.internship.order_service.analytics.fulfillment;
 
-import com.pizzeria.internship.order_service.analytics.AllLocations;
-import com.pizzeria.internship.order_service.analytics.SingleLocation;
-import com.pizzeria.internship.order_service.analytics.report.ReportRequest;
-import com.pizzeria.internship.order_service.analytics.report.ReportType;
+import com.pizzeria.internship.order_service.analytics.infrastructure.ReportRequest;
+import com.pizzeria.internship.order_service.analytics.infrastructure.ReportType;
+import com.pizzeria.internship.order_service.analytics.scope.AllLocations;
+import com.pizzeria.internship.order_service.analytics.scope.SingleLocation;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

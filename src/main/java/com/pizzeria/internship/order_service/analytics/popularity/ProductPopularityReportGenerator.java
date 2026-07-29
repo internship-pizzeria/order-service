@@ -1,5 +1,8 @@
-package com.pizzeria.internship.order_service.analytics.report;
+package com.pizzeria.internship.order_service.analytics.popularity;
 
+import com.pizzeria.internship.order_service.analytics.infrastructure.ReportGenerator;
+import com.pizzeria.internship.order_service.analytics.infrastructure.ReportRequest;
+import com.pizzeria.internship.order_service.analytics.infrastructure.ReportType;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -7,23 +10,23 @@ import org.springframework.stereotype.Component;
 import java.sql.Timestamp;
 import java.util.List;
 
-@Component
-class RevenueReportGenerator implements ReportGenerator {
 
+@Component
+class ProductPopularityReportGenerator implements ReportGenerator {
     private final JdbcTemplate analyticsJdbcTemplate;
 
-    RevenueReportGenerator(@Qualifier("analyticsJdbcTemplate") JdbcTemplate analyticsJdbcTemplate) {
+    ProductPopularityReportGenerator(@Qualifier("analyticsJdbcTemplate") JdbcTemplate analyticsJdbcTemplate) {
         this.analyticsJdbcTemplate = analyticsJdbcTemplate;
     }
 
     @Override
     public ReportType getType() {
-        return ReportType.REVENUE;
+        return ReportType.POPULARITY;
     }
 
     @Override
     public String getHeader() {
-        return "location_id;total_revenue;order_count";
+        return "product_id;product_name;total_quantity;total_revenue;percentage_of_total";
     }
 
     @Override
@@ -34,19 +37,23 @@ class RevenueReportGenerator implements ReportGenerator {
         };
         Object[] params = concat(baseParams, request.scope().sqlParams());
 
-        String sql = "SELECT location_id, " +
+        String sql = "SELECT product_id, product_name, " +
+                     "SUM(quantity) AS total_quantity, " +
                      "SUM(total_price) AS total_revenue, " +
-                     "COUNT(DISTINCT order_id) AS order_count " +
+                     "ROUND(SUM(total_price) * 100.0 / " +
+                     "NULLIF(SUM(SUM(total_price)) OVER(), 0), 1) AS percentage " +
                      "FROM report_order_items " +
                      "WHERE created_at >= ? AND created_at < ? " +
                      request.scope().sqlSuffix() + " " +
-                     "GROUP BY location_id " +
+                     "GROUP BY product_id, product_name " +
                      "ORDER BY total_revenue DESC";
 
         return analyticsJdbcTemplate.queryForList(sql, params).stream()
-                .map(row -> escapeCsv(row.get("location_id")) + ";"
+                .map(row -> escapeCsv(row.get("product_id")) + ";"
+                        + escapeCsv(row.get("product_name")) + ";"
+                        + escapeCsv(row.get("total_quantity")) + ";"
                         + escapeCsv(row.get("total_revenue")) + ";"
-                        + escapeCsv(row.get("order_count")))
+                        + escapeCsv(row.get("percentage")))
                 .toList();
     }
 

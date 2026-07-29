@@ -1,4 +1,4 @@
-package com.pizzeria.internship.order_service.analytics;
+package com.pizzeria.internship.order_service.analytics.performance;
 
 import com.pizzeria.internship.order_service.admin.LocationMetrics;
 import com.pizzeria.internship.order_service.admin.LocationPerformancePageResponse;

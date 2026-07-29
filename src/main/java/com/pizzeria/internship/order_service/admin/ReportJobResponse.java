@@ -1,8 +1,8 @@
 package com.pizzeria.internship.order_service.admin;
 
-import com.pizzeria.internship.order_service.analytics.report.ReportJob;
-import com.pizzeria.internship.order_service.analytics.report.ReportStatus;
-import com.pizzeria.internship.order_service.analytics.report.ReportType;
+import com.pizzeria.internship.order_service.analytics.infrastructure.ReportJob;
+import com.pizzeria.internship.order_service.analytics.infrastructure.ReportStatus;
+import com.pizzeria.internship.order_service.analytics.infrastructure.ReportType;
 
 import java.time.Instant;
 import java.util.UUID;

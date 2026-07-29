@@ -1,4 +1,4 @@
-package com.pizzeria.internship.order_service.analytics;
+package com.pizzeria.internship.order_service.analytics.sync;
 
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;

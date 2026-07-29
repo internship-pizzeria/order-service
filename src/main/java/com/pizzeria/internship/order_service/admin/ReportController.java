@@ -1,11 +1,11 @@
 package com.pizzeria.internship.order_service.admin;
 
-import com.pizzeria.internship.order_service.analytics.AnalyticsScope;
-import com.pizzeria.internship.order_service.analytics.report.ReportJob;
-import com.pizzeria.internship.order_service.analytics.report.ReportOrchestrator;
-import com.pizzeria.internship.order_service.analytics.report.ReportRequest;
-import com.pizzeria.internship.order_service.analytics.report.ReportStatus;
-import com.pizzeria.internship.order_service.analytics.report.ReportType;
+import com.pizzeria.internship.order_service.analytics.infrastructure.ReportJob;
+import com.pizzeria.internship.order_service.analytics.infrastructure.ReportOrchestrator;
+import com.pizzeria.internship.order_service.analytics.infrastructure.ReportRequest;
+import com.pizzeria.internship.order_service.analytics.infrastructure.ReportStatus;
+import com.pizzeria.internship.order_service.analytics.infrastructure.ReportType;
+import com.pizzeria.internship.order_service.analytics.scope.AnalyticsScope;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
