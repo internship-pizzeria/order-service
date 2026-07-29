@@ -1,5 +1,7 @@
 package com.pizzeria.internship.order_service.analytics.report;
 
+import com.pizzeria.internship.order_service.analytics.AllLocations;
+import com.pizzeria.internship.order_service.analytics.SingleLocation;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,7 +9,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,7 +34,7 @@ public class ReportOrchestrator {
         ReportJob job = ReportJob.builder()
                 .type(type)
                 .status(ReportStatus.PENDING)
-                .locationId(request.locationId())
+                .locationId(request.scope().extractLocationId())
                 .fromTime(request.from())
                 .toTime(request.to())
                 .build();
@@ -49,11 +50,7 @@ public class ReportOrchestrator {
 
         try {
             ReportGenerator generator = registry.getGenerator(job.getType());
-            ReportRequest request = new ReportRequest(
-                    job.getLocationId(),
-                    job.getFromTime(),
-                    job.getToTime()
-            );
+            ReportRequest request = buildRequest(job);
 
             List<String> rows = generator.generate(request);
             Path dir = Path.of(REPORTS_DIR);
@@ -74,5 +71,13 @@ public class ReportOrchestrator {
             job.markFailed(e.getMessage());
             jobRepository.save(job);
         }
+    }
+
+    private static ReportRequest buildRequest(ReportJob job) {
+        com.pizzeria.internship.order_service.analytics.AnalyticsScope scope =
+                job.getLocationId() != null
+                        ? new SingleLocation(job.getLocationId())
+                        : new AllLocations();
+        return new ReportRequest(scope, job.getFromTime(), job.getToTime());
     }
 }

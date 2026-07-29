@@ -4,4 +4,5 @@ public enum ReportType {
     REVENUE,
     POPULARITY,
     FULFILLMENT
+    LOCATION_PERFORMANCE
 }

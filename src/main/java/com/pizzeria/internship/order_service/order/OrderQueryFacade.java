@@ -1,5 +1,6 @@
 package com.pizzeria.internship.order_service.order;
 
+import com.pizzeria.internship.order_service.analytics.AnalyticsScope;
 import com.pizzeria.internship.order_service.admin.ProductRankingItem;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -26,30 +27,27 @@ public class OrderQueryFacade {
     }
 
     public Page<ProductRankingItem> getProductRanking(
-            Long locationId, Instant from, Instant to,
+            AnalyticsScope scope, Instant from, Instant to,
             Pageable pageable) {
 
         Timestamp fromTs = Timestamp.from(from);
         Timestamp toTs = Timestamp.from(to);
-        String whereClause;
-        Object[] countParams;
-        Object[] dataParams;
+        Object[] scopeParams = scope.sqlParams();
 
-        if (locationId != null) {
-            whereClause = "AND location_id = ?";
-            countParams = new Object[]{fromTs, toTs, locationId};
-            dataParams = new Object[]{fromTs, toTs, locationId,
-                    pageable.getPageSize(), pageable.getOffset()};
-        } else {
-            whereClause = "";
-            countParams = new Object[]{fromTs, toTs};
-            dataParams = new Object[]{fromTs, toTs,
-                    pageable.getPageSize(), pageable.getOffset()};
-        }
+        Object[] countParams = concat(
+                new Object[]{fromTs, toTs},
+                scopeParams
+        );
+
+        Object[] dataParams = concat(
+                new Object[]{fromTs, toTs},
+                scopeParams,
+                new Object[]{pageable.getPageSize(), pageable.getOffset()}
+        );
 
         long total = analyticsJdbcTemplate.queryForObject(
                 "SELECT COUNT(DISTINCT product_id) FROM report_order_items " +
-                "WHERE created_at >= ? AND created_at < ? " + whereClause,
+                "WHERE created_at >= ? AND created_at < ? " + scope.sqlSuffix(),
                 Long.class, countParams);
 
         List<ProductRankingItem> items = analyticsJdbcTemplate.query(
@@ -57,7 +55,7 @@ public class OrderQueryFacade {
                 "SUM(quantity) AS total_quantity, " +
                 "SUM(total_price) AS total_revenue " +
                 "FROM report_order_items " +
-                "WHERE created_at >= ? AND created_at < ? " + whereClause + " " +
+                "WHERE created_at >= ? AND created_at < ? " + scope.sqlSuffix() + " " +
                 "GROUP BY product_id, product_name " +
                 "ORDER BY total_revenue DESC " +
                 "LIMIT ? OFFSET ?",
@@ -73,21 +71,28 @@ public class OrderQueryFacade {
         return new PageImpl<>(items, pageable, total);
     }
 
-    public BigDecimal getTotalRevenue(Long locationId, Instant from, Instant to) {
-        String whereClause;
-        Object[] params;
-        if (locationId != null) {
-            whereClause = "AND location_id = ?";
-            params = new Object[]{Timestamp.from(from), Timestamp.from(to), locationId};
-        } else {
-            whereClause = "";
-            params = new Object[]{Timestamp.from(from), Timestamp.from(to)};
-        }
+    public BigDecimal getTotalRevenue(AnalyticsScope scope, Instant from, Instant to) {
+        Object[] params = concat(
+                new Object[]{Timestamp.from(from), Timestamp.from(to)},
+                scope.sqlParams()
+        );
 
         BigDecimal result = analyticsJdbcTemplate.queryForObject(
                 "SELECT COALESCE(SUM(total_price), 0) FROM report_order_items " +
-                "WHERE created_at >= ? AND created_at < ? " + whereClause,
+                "WHERE created_at >= ? AND created_at < ? " + scope.sqlSuffix(),
                 BigDecimal.class, params);
         return result != null ? result : BigDecimal.ZERO;
+    }
+
+    private static Object[] concat(Object[]... arrays) {
+        int total = 0;
+        for (Object[] arr : arrays) total += arr.length;
+        Object[] result = new Object[total];
+        int dest = 0;
+        for (Object[] arr : arrays) {
+            System.arraycopy(arr, 0, result, dest, arr.length);
+            dest += arr.length;
+        }
+        return result;
     }
 }

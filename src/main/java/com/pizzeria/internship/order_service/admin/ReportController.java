@@ -1,5 +1,6 @@
 package com.pizzeria.internship.order_service.admin;
 
+import com.pizzeria.internship.order_service.analytics.AnalyticsScope;
 import com.pizzeria.internship.order_service.analytics.report.ReportJob;
 import com.pizzeria.internship.order_service.analytics.report.ReportOrchestrator;
 import com.pizzeria.internship.order_service.analytics.report.ReportRequest;
@@ -32,7 +33,8 @@ class ReportController {
             @RequestParam Instant from,
             @RequestParam Instant to) {
 
-        ReportRequest request = new ReportRequest(locationId, from, to);
+        AnalyticsScope scope = AdminAnalyticsController.resolveScope(locationId);
+        ReportRequest request = new ReportRequest(scope, from, to);
         ReportJob job = orchestrator.submit(type, request);
         orchestrator.execute(job.getId());
 
