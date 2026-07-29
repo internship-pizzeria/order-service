@@ -41,19 +41,5 @@ public interface AdminAnalyticsDtos {
             double medianTimeToDeliverMinutes
     ) {}
 
-    // Task 8: Cross-Location Comparison
-    record LocationMetrics(
-            Long locationId,
-            String cityName,
-            BigDecimal totalRevenue,
-            long orderCount,
-            double fulfillmentTimeMinutes
-    ) {}
 
-    record LocationPerformancePageResponse(
-            List<LocationMetrics> content,
-            int pageNumber,
-            int pageSize,
-            long totalElements
-    ) {}
 }

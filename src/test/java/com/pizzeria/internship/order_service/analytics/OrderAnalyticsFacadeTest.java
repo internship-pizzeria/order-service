@@ -36,7 +36,7 @@ class OrderAnalyticsFacadeTest {
                 .thenReturn(Map.of("total_revenue", new BigDecimal("299.90"), "order_count", 3L));
 
         OrderAnalyticsFacade.RevenueResult result =
-                orderAnalyticsFacade.calculateRevenue(5L, FROM, TO);
+                orderAnalyticsFacade.calculateRevenue(new SingleLocation(5L), FROM, TO);
 
         assertEquals(new BigDecimal("299.90"), result.totalRevenue());
         assertEquals(3, result.orderCount());
@@ -50,7 +50,7 @@ class OrderAnalyticsFacadeTest {
                 .thenReturn(Map.of("total_revenue", new BigDecimal("1000.00"), "order_count", 10L));
 
         OrderAnalyticsFacade.RevenueResult result =
-                orderAnalyticsFacade.calculateRevenue(null, FROM, TO);
+                orderAnalyticsFacade.calculateRevenue(new AllLocations(), FROM, TO);
 
         assertEquals(new BigDecimal("1000.00"), result.totalRevenue());
         assertEquals(10, result.orderCount());
@@ -64,7 +64,7 @@ class OrderAnalyticsFacadeTest {
                 .thenReturn(Map.of("total_revenue", BigDecimal.ZERO, "order_count", 0L));
 
         OrderAnalyticsFacade.RevenueResult result =
-                orderAnalyticsFacade.calculateRevenue(null, FROM, TO);
+                orderAnalyticsFacade.calculateRevenue(new AllLocations(), FROM, TO);
 
         assertEquals(BigDecimal.ZERO, result.totalRevenue());
         assertEquals(0, result.orderCount());

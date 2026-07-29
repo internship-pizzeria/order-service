@@ -7,17 +7,17 @@ import java.sql.Timestamp;
 import java.util.List;
 
 @Component
-class RevenueReportGenerator implements ReportGenerator {
+class LocationPerformanceReportGenerator implements ReportGenerator {
 
     private final JdbcTemplate analyticsJdbcTemplate;
 
-    RevenueReportGenerator(JdbcTemplate analyticsJdbcTemplate) {
+    LocationPerformanceReportGenerator(JdbcTemplate analyticsJdbcTemplate) {
         this.analyticsJdbcTemplate = analyticsJdbcTemplate;
     }
 
     @Override
     public ReportType getType() {
-        return ReportType.REVENUE;
+        return ReportType.LOCATION_PERFORMANCE;
     }
 
     @Override
@@ -34,13 +34,13 @@ class RevenueReportGenerator implements ReportGenerator {
         Object[] params = concat(baseParams, request.scope().sqlParams());
 
         String sql = "SELECT location_id, " +
-                     "SUM(total_price) AS total_revenue, " +
-                     "COUNT(DISTINCT order_id) AS order_count " +
-                     "FROM report_order_items " +
-                     "WHERE created_at >= ? AND created_at < ? " +
-                     request.scope().sqlSuffix() + " " +
-                     "GROUP BY location_id " +
-                     "ORDER BY total_revenue DESC";
+                "SUM(total_price) AS total_revenue, " +
+                "COUNT(DISTINCT order_id) AS order_count " +
+                "FROM report_order_items " +
+                "WHERE created_at >= ? AND created_at < ? " +
+                request.scope().sqlSuffix() + " " +
+                "GROUP BY location_id " +
+                "ORDER BY total_revenue DESC";
 
         return analyticsJdbcTemplate.queryForList(sql, params).stream()
                 .map(row -> escapeCsv(row.get("location_id")) + ";"

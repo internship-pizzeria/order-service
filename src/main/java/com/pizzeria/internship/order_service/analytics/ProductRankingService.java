@@ -24,11 +24,11 @@ public class ProductRankingService {
 
     @Transactional(readOnly = true)
     public ProductRankingResponse getProductRanking(
-            Long locationId, Instant from, Instant to,
+            AnalyticsScope scope, Instant from, Instant to,
             RankingSort sortBy, Pageable pageable) {
         Page<ProductRankingItem> page =
-                orderQueryFacade.getProductRanking(locationId, from, to, pageable);
-        BigDecimal totalRevenue = orderQueryFacade.getTotalRevenue(locationId, from, to);
+                orderQueryFacade.getProductRanking(scope, from, to, pageable);
+        BigDecimal totalRevenue = orderQueryFacade.getTotalRevenue(scope, from, to);
 
         Comparator<ProductRankingItem> comparator = switch (sortBy) {
             case BY_QUANTITY -> Comparator.comparingLong(ProductRankingItem::totalQuantity).reversed();
