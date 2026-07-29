@@ -8,7 +8,7 @@ import java.util.List;
 
 
 @Component
-public class ProductPopularityReportGenerator implements  ReportGenerator {
+class ProductPopularityReportGenerator implements ReportGenerator {
     private final JdbcTemplate analyticsJdbcTemplate;
 
     ProductPopularityReportGenerator(JdbcTemplate analyticsJdbcTemplate) {
@@ -68,11 +68,20 @@ public class ProductPopularityReportGenerator implements  ReportGenerator {
         }
 
         return analyticsJdbcTemplate.queryForList(sql, params).stream()
-                .map(row -> row.get("product_id") + ","
-                        + row.get("product_name") + ","
-                        + row.get("total_quantity") + ","
-                        + row.get("total_revenue") + ","
-                        + row.get("percentage"))
+                .map(row -> escapeCsv(row.get("product_id")) + ","
+                        + escapeCsv(row.get("product_name")) + ","
+                        + escapeCsv(row.get("total_quantity")) + ","
+                        + escapeCsv(row.get("total_revenue")) + ","
+                        + escapeCsv(row.get("percentage")))
                 .toList();
+    }
+
+    private static String escapeCsv(Object value) {
+        if (value == null) return "";
+        String s = value.toString();
+        if (s.contains(",") || s.contains("\"") || s.contains("\n") || s.contains("\r")) {
+            return "\"" + s.replace("\"", "\"\"") + "\"";
+        }
+        return s;
     }
 }
