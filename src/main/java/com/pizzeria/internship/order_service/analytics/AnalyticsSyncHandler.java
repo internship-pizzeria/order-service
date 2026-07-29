@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 import static org.springframework.transaction.event.TransactionPhase.AFTER_COMMIT;
 
@@ -48,7 +49,7 @@ class AnalyticsSyncHandler {
                         item.historicalPrice(),
                         itemTotal,
                         dto.status(),
-                        dto.createdAt()
+                        dto.createdAt() != null ? Timestamp.from(dto.createdAt()) : null
                 );
             }
             log.info("Synced order {} to analytics DB ({} items)", dto.orderId(), dto.items().size());

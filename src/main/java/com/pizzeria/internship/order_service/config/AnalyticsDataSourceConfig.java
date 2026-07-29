@@ -1,18 +1,35 @@
 package com.pizzeria.internship.order_service.config;
 
 import com.zaxxer.hikari.HikariDataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.init.DataSourceInitializer;
-import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 import javax.sql.DataSource;
 
 @Configuration
-class AnalyticsDataSourceConfig {
+public class AnalyticsDataSourceConfig {
+
+    private static final Logger log = LoggerFactory.getLogger(AnalyticsDataSourceConfig.class);
+
+    @Primary
+    @Bean(destroyMethod = "close")
+    DataSource dataSource(
+            @Value("${spring.datasource.url}") String url,
+            @Value("${spring.datasource.username}") String username,
+            @Value("${spring.datasource.password}") String password) {
+        HikariDataSource ds = new HikariDataSource();
+        ds.setJdbcUrl(url);
+        ds.setUsername(username);
+        ds.setPassword(password);
+        ds.setPoolName("primary-hikari-pool");
+        return ds;
+    }
 
     @Bean(destroyMethod = "close")
     HikariDataSource analyticsDataSource(
@@ -28,18 +45,7 @@ class AnalyticsDataSourceConfig {
     }
 
     @Bean
-    JdbcTemplate analyticsJdbcTemplate(HikariDataSource analyticsDataSource) {
+    JdbcTemplate analyticsJdbcTemplate(@Qualifier("analyticsDataSource") DataSource analyticsDataSource) {
         return new JdbcTemplate(analyticsDataSource);
-    }
-
-    @Bean
-    DataSourceInitializer analyticsDataSourceInitializer(HikariDataSource analyticsDataSource) {
-        ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
-        populator.addScript(new ClassPathResource("analytics-schema.sql"));
-        populator.setSeparator(";");
-        DataSourceInitializer initializer = new DataSourceInitializer();
-        initializer.setDataSource(analyticsDataSource);
-        initializer.setDatabasePopulator(populator);
-        return initializer;
     }
 }
