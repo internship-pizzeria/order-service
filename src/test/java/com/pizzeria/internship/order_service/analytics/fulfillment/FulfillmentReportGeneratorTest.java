@@ -1,5 +1,7 @@
 package com.pizzeria.internship.order_service.analytics.fulfillment;
 
+import com.pizzeria.internship.order_service.analytics.AllLocations;
+import com.pizzeria.internship.order_service.analytics.SingleLocation;
 import com.pizzeria.internship.order_service.analytics.report.ReportRequest;
 import com.pizzeria.internship.order_service.analytics.report.ReportType;
 import org.junit.jupiter.api.Test;
@@ -46,7 +48,7 @@ class FulfillmentReportGeneratorTest {
         when(fulfillmentService.calculateMetrics(5L, FROM, TO))
                 .thenReturn(new FulfillmentMetricsResponse(45.5, 40.0, 90.0, timings));
 
-        ReportRequest request = new ReportRequest(5L, FROM, TO);
+        ReportRequest request = new ReportRequest(new SingleLocation(5L), FROM, TO);
         List<String> rows = generator.generate(request);
 
         assertEquals(3, rows.size());
@@ -60,7 +62,7 @@ class FulfillmentReportGeneratorTest {
         when(fulfillmentService.calculateMetrics(null, FROM, TO))
                 .thenReturn(new FulfillmentMetricsResponse(50.0, 45.0, 95.0, List.of()));
 
-        ReportRequest request = new ReportRequest(null, FROM, TO);
+        ReportRequest request = new ReportRequest(new AllLocations(), FROM, TO);
         List<String> rows = generator.generate(request);
 
         assertEquals(1, rows.size());
@@ -76,7 +78,7 @@ class FulfillmentReportGeneratorTest {
         when(fulfillmentService.calculateMetrics(null, FROM, TO))
                 .thenReturn(new FulfillmentMetricsResponse(30.0, 28.0, 55.0, timings));
 
-        ReportRequest request = new ReportRequest(null, FROM, TO);
+        ReportRequest request = new ReportRequest(new AllLocations(), FROM, TO);
         List<String> rows = generator.generate(request);
 
         assertEquals(2, rows.size());
