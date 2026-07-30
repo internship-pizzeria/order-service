@@ -16,6 +16,14 @@ public class UserContext {
         return getToken().getLocationId();
     }
 
+    public static Long getUserIdOrNull() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth instanceof UserIdAuthenticationToken token) {
+            return token.getUserId();
+        }
+        return null;
+    }
+
     private static UserIdAuthenticationToken getToken() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth instanceof UserIdAuthenticationToken token) {

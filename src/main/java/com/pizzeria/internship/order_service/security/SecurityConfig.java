@@ -39,8 +39,20 @@ class SecurityConfig {
                         .authenticationEntryPoint((request, response, authException) -> {
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             response.setContentType("application/problem+json");
+                            String userId = request.getHeader("X-User-Id");
+                            String locationId = request.getHeader("LocationId");
+                            String detail;
+                            if (userId == null && locationId == null) {
+                                detail = "Missing X-User-ID and LocationId headers";
+                            } else if (userId == null) {
+                                detail = "Missing X-User-ID header";
+                            } else if (locationId == null) {
+                                detail = "Missing locationId header";
+                            } else {
+                                detail = "Invalid header values";
+                            }
                             response.getWriter().write("""
-                                    {"type":"https://api.pizzeria.com/errors/unauthorized","title":"Unauthorized","status":401,"detail":"Missing X-User-ID or LocationId header"}""");
+                                    {"type":"https://api.pizzeria.com/errors/unauthorized","title":"Unauthorized","status":401,"detail":"%s"}""".formatted(detail));
                         })
                 );
 
