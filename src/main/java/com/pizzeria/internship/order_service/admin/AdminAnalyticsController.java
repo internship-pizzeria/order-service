@@ -1,13 +1,14 @@
 package com.pizzeria.internship.order_service.admin;
 
+import com.pizzeria.internship.order_service.analytics.fulfillment.FulfillmentMetricsResponse;
+import com.pizzeria.internship.order_service.analytics.fulfillment.FulfillmentService;
+import com.pizzeria.internship.order_service.analytics.peakhours.PeakHoursService;
 import com.pizzeria.internship.order_service.analytics.performance.LocationPerformanceService;
 import com.pizzeria.internship.order_service.analytics.popularity.ProductRankingService;
 import com.pizzeria.internship.order_service.analytics.revenue.OrderAnalyticsFacade;
 import com.pizzeria.internship.order_service.analytics.scope.AllLocations;
 import com.pizzeria.internship.order_service.analytics.scope.AnalyticsScope;
 import com.pizzeria.internship.order_service.analytics.scope.SingleLocation;
-import com.pizzeria.internship.order_service.analytics.fulfillment.FulfillmentMetricsResponse;
-import com.pizzeria.internship.order_service.analytics.fulfillment.FulfillmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -26,6 +27,7 @@ class AdminAnalyticsController {
     private final ProductRankingService productRankingService;
     private final FulfillmentService fulfillmentService;
     private final LocationPerformanceService locationPerformanceService;
+    private final PeakHoursService peakHoursService;
 
     @GetMapping("/revenue")
     public RevenueSummaryResponse getRevenueSummary(
@@ -68,8 +70,8 @@ class AdminAnalyticsController {
             @RequestParam(required = false) Long locationId,
             @RequestParam Instant from,
             @RequestParam Instant to) {
-        // TODO (Task 4): Group orders by extracted hour from createdAt timestamp
-        return null;
+        AnalyticsScope scope = resolveScope(locationId);
+        return peakHoursService.getPeakHours(scope, from, to);
     }
 
     @GetMapping("/trends")
