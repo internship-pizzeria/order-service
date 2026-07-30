@@ -1,6 +1,5 @@
 package com.pizzeria.internship.order_service.product;
 
-import com.pizzeria.internship.order_service.user.UserContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -60,7 +59,7 @@ public class ProductClient {
         List<InternalProductDto> dtos = restClient.post()
                 .uri("/api/v1/internal/products/details?locationId={locationId}", locationId)
                 .header("LocationId", String.valueOf(locationId))
-                .header("X-User-Id", String.valueOf(UserContext.getUserId()))
+                .header("X-User-Id", "0")
                 .body(productIds)
                 .retrieve()
                 .body(new ParameterizedTypeReference<List<InternalProductDto>>() {});

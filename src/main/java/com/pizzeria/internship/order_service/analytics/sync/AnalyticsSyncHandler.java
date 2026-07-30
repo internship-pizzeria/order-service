@@ -11,6 +11,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 
 import static org.springframework.transaction.event.TransactionPhase.AFTER_COMMIT;
 
@@ -50,7 +51,7 @@ class AnalyticsSyncHandler {
                         item.historicalPrice(),
                         itemTotal,
                         dto.status(),
-                        dto.createdAt() != null ? Timestamp.from(dto.createdAt()) : null
+                        Timestamp.from(dto.createdAt() != null ? dto.createdAt() : Instant.now())
                 );
             }
             log.info("Synced order {} to analytics DB ({} items)", dto.orderId(), dto.items().size());
