@@ -8,11 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-
-import java.io.FileWriter;
-import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,8 +16,6 @@ import java.util.UUID;
 public class ReportOrchestrator {
 
     private static final Logger log = LoggerFactory.getLogger(ReportOrchestrator.class);
-    private static final String REPORTS_DIR = "reports";
-
     private final ReportRegistry registry;
     private final ReportJobRepository jobRepository;
 
@@ -54,17 +47,11 @@ public class ReportOrchestrator {
             ReportRequest request = buildRequest(job);
 
             List<String> rows = generator.generate(request);
-            Path dir = Path.of(REPORTS_DIR);
-            Files.createDirectories(dir);
-            String fileName = job.getType().name().toLowerCase() + "_" + jobId + ".csv";
-            Path filePath = dir.resolve(fileName);
 
-            try (PrintWriter writer = new PrintWriter(new FileWriter(filePath.toFile()))) {
-                writer.println(generator.getHeader());
-                rows.forEach(writer::println);
-            }
+            String header = generator.getHeader();
+            String csvContent = rows.isEmpty() ? header : header + "\n" + String.join("\n", rows);
 
-            job.markCompleted(filePath.toString());
+            job.markCompleted(csvContent);
             jobRepository.save(job);
             log.info("Report {} completed: {} rows", jobId, rows.size());
         } catch (Exception e) {

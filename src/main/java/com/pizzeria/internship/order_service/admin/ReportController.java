@@ -7,15 +7,14 @@ import com.pizzeria.internship.order_service.analytics.infrastructure.ReportStat
 import com.pizzeria.internship.order_service.analytics.infrastructure.ReportType;
 import com.pizzeria.internship.order_service.analytics.scope.AnalyticsScope;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
-import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -63,14 +62,12 @@ class ReportController {
             return ResponseEntity.status(202).build();
         }
 
-        if (job.getFilePath() == null) {
+        if (job.getFileContent() == null) {
             return ResponseEntity.notFound().build();
         }
 
-        Resource resource = new FileSystemResource(Path.of(job.getFilePath()));
-        if (!resource.exists()) {
-            return ResponseEntity.notFound().build();
-        }
+        byte[] content = job.getFileContent().getBytes(StandardCharsets.UTF_8);
+        Resource resource = new ByteArrayResource(content);
 
         String fileName = job.getType().name().toLowerCase() + "_report.csv";
         return ResponseEntity.ok()

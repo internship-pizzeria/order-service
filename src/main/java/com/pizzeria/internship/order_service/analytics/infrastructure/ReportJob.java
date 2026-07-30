@@ -19,6 +19,7 @@ public class ReportJob {
     private Instant fromTime;
     private Instant toTime;
     private String filePath;
+    private String fileContent;
     private String errorMessage;
     private Instant createdAt;
     private Instant completedAt;
@@ -27,9 +28,9 @@ public class ReportJob {
         this.status = status;
     }
 
-    public void markCompleted(String filePath) {
+    public void markCompleted(String fileContent) {
         this.status = ReportStatus.COMPLETED;
-        this.filePath = filePath;
+        this.fileContent = fileContent;
         this.completedAt = Instant.now();
     }
 

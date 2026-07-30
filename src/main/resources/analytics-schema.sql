@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS report_jobs (
     from_time TIMESTAMP NOT NULL,
     to_time TIMESTAMP NOT NULL,
     file_path TEXT,
+    file_content TEXT,
     error_message TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     completed_at TIMESTAMP

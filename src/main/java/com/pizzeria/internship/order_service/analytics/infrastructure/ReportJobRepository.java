@@ -33,7 +33,7 @@ class ReportJobRepository {
     Optional<ReportJob> findById(UUID id) {
         return analyticsJdbcTemplate.query("""
                 SELECT id, type, status, location_id, from_time, to_time,
-                       file_path, error_message, created_at, completed_at
+                       file_path, file_content, error_message, created_at, completed_at
                 FROM report_jobs
                 WHERE id = ?
                 """, ROW_MAPPER, id).stream().findFirst();
@@ -43,8 +43,8 @@ class ReportJobRepository {
         Instant now = Instant.now();
         analyticsJdbcTemplate.update("""
                 INSERT INTO report_jobs
-                (id, type, status, location_id, from_time, to_time, file_path, error_message, created_at, completed_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (id, type, status, location_id, from_time, to_time, file_path, file_content, error_message, created_at, completed_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 job.getId(),
                 job.getType().name(),
@@ -53,6 +53,7 @@ class ReportJobRepository {
                 Timestamp.from(job.getFromTime()),
                 Timestamp.from(job.getToTime()),
                 job.getFilePath(),
+                job.getFileContent(),
                 job.getErrorMessage(),
                 Timestamp.from(now),
                 job.getCompletedAt() != null ? Timestamp.from(job.getCompletedAt()) : null
@@ -63,11 +64,12 @@ class ReportJobRepository {
     private void update(ReportJob job) {
         analyticsJdbcTemplate.update("""
                 UPDATE report_jobs
-                SET status = ?, file_path = ?, error_message = ?, completed_at = ?
+                SET status = ?, file_path = ?, file_content = ?, error_message = ?, completed_at = ?
                 WHERE id = ?
                 """,
                 job.getStatus().name(),
                 job.getFilePath(),
+                job.getFileContent(),
                 job.getErrorMessage(),
                 job.getCompletedAt() != null ? Timestamp.from(job.getCompletedAt()) : null,
                 job.getId()
@@ -82,6 +84,7 @@ class ReportJobRepository {
             .fromTime(rs.getTimestamp("from_time").toInstant())
             .toTime(rs.getTimestamp("to_time").toInstant())
             .filePath(rs.getString("file_path"))
+            .fileContent(rs.getString("file_content"))
             .errorMessage(rs.getString("error_message"))
             .createdAt(rs.getTimestamp("created_at").toInstant())
             .completedAt(rs.getTimestamp("completed_at") != null ? rs.getTimestamp("completed_at").toInstant() : null)
