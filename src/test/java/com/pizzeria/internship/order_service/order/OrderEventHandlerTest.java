@@ -53,7 +53,7 @@ class OrderEventHandlerTest {
         OrderResponseDto dto = new OrderResponseDto(
                 orderId, "NEW", BigDecimal.TEN, "123 Main St", Instant.now(), List.of());
 
-        eventHandler.onOrderEvent(new OrderEvent("ORDER_NEW", TEST_LOCATION_ID, dto));
+        eventHandler.onOrderEvent(new OrderEvent("ORDER_NEW", TEST_LOCATION_ID, null, dto));
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
         verify(wsHandler).sendToLocation(eq(TEST_LOCATION_ID), captor.capture());
@@ -69,7 +69,7 @@ class OrderEventHandlerTest {
         OrderResponseDto dto = new OrderResponseDto(
                 orderId, "ACCEPTED", BigDecimal.TEN, "123 Main St", Instant.now(), List.of());
 
-        eventHandler.onOrderEvent(new OrderEvent("ORDER_STATUS_CHANGED", TEST_LOCATION_ID, dto));
+        eventHandler.onOrderEvent(new OrderEvent("ORDER_STATUS_CHANGED", TEST_LOCATION_ID, null, dto));
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
         verify(wsHandler).sendToLocation(eq(TEST_LOCATION_ID), captor.capture());
@@ -86,7 +86,7 @@ class OrderEventHandlerTest {
                 orderId, "NEW", BigDecimal.TEN, "123 Main St", Instant.now(), List.of());
 
         Long differentLocationId = 42L;
-        eventHandler.onOrderEvent(new OrderEvent("ORDER_NEW", differentLocationId, dto));
+        eventHandler.onOrderEvent(new OrderEvent("ORDER_NEW", differentLocationId, null, dto));
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
         verify(wsHandler).sendToLocation(eq(differentLocationId), captor.capture());

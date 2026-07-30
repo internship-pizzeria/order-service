@@ -15,6 +15,20 @@ CREATE INDEX IF NOT EXISTS idx_roi_location ON report_order_items(location_id);
 CREATE INDEX IF NOT EXISTS idx_roi_created ON report_order_items(created_at);
 CREATE INDEX IF NOT EXISTS idx_roi_product ON report_order_items(product_id);
 
+CREATE TABLE IF NOT EXISTS status_audit (
+    id BIGSERIAL PRIMARY KEY,
+    order_id UUID NOT NULL,
+    from_status VARCHAR(50),
+    to_status VARCHAR(50) NOT NULL,
+    changed_by BIGINT,
+    location_id BIGINT NOT NULL,
+    changed_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_sa_order ON status_audit(order_id);
+CREATE INDEX IF NOT EXISTS idx_sa_location ON status_audit(location_id);
+CREATE INDEX IF NOT EXISTS idx_sa_changed ON status_audit(changed_at);
+
 CREATE TABLE IF NOT EXISTS report_jobs (
     id UUID PRIMARY KEY,
     type VARCHAR(50) NOT NULL,

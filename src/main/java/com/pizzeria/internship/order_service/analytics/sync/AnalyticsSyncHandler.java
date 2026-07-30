@@ -67,6 +67,21 @@ class AnalyticsSyncHandler {
         }
 
         try {
+            String currentStatus = analyticsJdbcTemplate.queryForObject(
+                    "SELECT status FROM report_order_items WHERE order_id = ? LIMIT 1",
+                    String.class, event.data().orderId());
+
+            analyticsJdbcTemplate.update("""
+                    INSERT INTO status_audit
+                    (order_id, from_status, to_status, changed_by, location_id, changed_at)
+                    VALUES (?, ?, ?, ?, ?, NOW())
+                    """,
+                    event.data().orderId(),
+                    currentStatus,
+                    event.data().status(),
+                    event.changedBy(),
+                    event.locationId());
+
             int updated = analyticsJdbcTemplate.update("""
                     UPDATE report_order_items
                     SET status = ?
@@ -78,6 +93,27 @@ class AnalyticsSyncHandler {
             log.info("Updated status for order {} in analytics DB ({} rows)", event.data().orderId(), updated);
         } catch (Exception e) {
             log.error("Failed to update order status in analytics DB", e);
+        }
+    }
+
+    @Async
+    @TransactionalEventListener(phase = AFTER_COMMIT)
+    void onOrderCreatedAudit(OrderEvent event) {
+        if (!"ORDER_NEW".equals(event.eventType())) {
+            return;
+        }
+
+        try {
+            analyticsJdbcTemplate.update("""
+                    INSERT INTO status_audit
+                    (order_id, from_status, to_status, changed_by, location_id, changed_at)
+                    VALUES (?, NULL, 'NEW', ?, ?, NOW())
+                    """,
+                    event.data().orderId(),
+                    event.changedBy(),
+                    event.locationId());
+        } catch (Exception e) {
+            log.error("Failed to record order creation in status_audit", e);
         }
     }
 }

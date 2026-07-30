@@ -46,6 +46,6 @@ public class OrderTimeoutScheduler {
         log.info("Auto-rejected order {} for location {} - no response within {} minutes",
                 order.getId(), order.getLocationId(), timeoutMinutes);
         OrderResponseDto dto = OrderResponseDto.fromOrder(order);
-        eventPublisher.publishEvent(new OrderEvent("ORDER_STATUS_CHANGED", order.getLocationId(), dto));
+        eventPublisher.publishEvent(new OrderEvent("ORDER_STATUS_CHANGED", order.getLocationId(), null, dto));
     }
 }

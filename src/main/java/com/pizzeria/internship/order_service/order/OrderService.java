@@ -34,7 +34,7 @@ class OrderService {
         orderRepository.save(order);
         revenueCacheService.addOrderRevenue(order.getLocationId(), order.getTotalPrice());
         OrderResponseDto dto = OrderResponseDto.fromOrder(order);
-        eventPublisher.publishEvent(new OrderEvent("ORDER_NEW", order.getLocationId(), dto));
+        eventPublisher.publishEvent(new OrderEvent("ORDER_NEW", order.getLocationId(), UserContext.getUserId(), dto));
         return dto;
     }
 
@@ -82,7 +82,7 @@ class OrderService {
         order.updateStatus(targetStatus);
         orderRepository.save(order);
         OrderResponseDto dto = OrderResponseDto.fromOrder(order);
-        eventPublisher.publishEvent(new OrderEvent("ORDER_STATUS_CHANGED", order.getLocationId(), dto));
+        eventPublisher.publishEvent(new OrderEvent("ORDER_STATUS_CHANGED", order.getLocationId(), UserContext.getUserId(), dto));
         return dto;
     }
 

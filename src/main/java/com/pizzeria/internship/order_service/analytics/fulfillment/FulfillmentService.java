@@ -1,5 +1,6 @@
 package com.pizzeria.internship.order_service.analytics.fulfillment;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -10,10 +11,10 @@ import java.util.List;
 @Service
 public class FulfillmentService {
 
-    private final JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate analyticsJdbcTemplate;
 
-    public FulfillmentService(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public FulfillmentService(@Qualifier("analyticsJdbcTemplate") JdbcTemplate analyticsJdbcTemplate) {
+        this.analyticsJdbcTemplate = analyticsJdbcTemplate;
     }
 
     public FulfillmentMetricsResponse calculateMetrics(Long locationId, Instant from, Instant to) {
@@ -74,7 +75,7 @@ public class FulfillmentService {
             params = new Object[]{from, to};
         }
 
-        var row = jdbcTemplate.queryForMap(sql, params);
+        var row = analyticsJdbcTemplate.queryForMap(sql, params);
         return new FulfillmentMetricsResponse.DeliverySummary(
                 ((Number) row.get("avg_minutes")).doubleValue(),
                 ((Number) row.get("median_minutes")).doubleValue(),
@@ -139,7 +140,7 @@ public class FulfillmentService {
             params = new Object[]{from, to};
         }
 
-        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+        return analyticsJdbcTemplate.query(sql, (rs, rowNum) -> {
             Object fromStatus = rs.getObject("from_status");
             return new FulfillmentMetricsResponse.StatusTiming(
                     fromStatus != null ? rs.getString("from_status") : "NEW",

@@ -23,7 +23,7 @@ import static org.mockito.Mockito.*;
 class FulfillmentServiceTest {
 
     @Mock
-    private JdbcTemplate jdbcTemplate;
+    private JdbcTemplate analyticsJdbcTemplate;
 
     @InjectMocks
     private FulfillmentService fulfillmentService;
@@ -33,7 +33,7 @@ class FulfillmentServiceTest {
 
     @Test
     void shouldCalculateDeliveryMetricsWithLocationFilter() {
-        when(jdbcTemplate.queryForMap(
+        when(analyticsJdbcTemplate.queryForMap(
                 argThat(sql -> sql.contains("sa_del.to_status = 'DELIVERED'")),
                 eq(Timestamp.from(FROM)), eq(Timestamp.from(TO)), eq(5L)))
                 .thenReturn(Map.of(
@@ -42,7 +42,7 @@ class FulfillmentServiceTest {
                         "p95_minutes", 90.0
                 ));
 
-        when(jdbcTemplate.query(
+        when(analyticsJdbcTemplate.query(
                 argThat(sql -> sql.contains("LAG(changed_at)")),
                 any(RowMapper.class),
                 eq(Timestamp.from(FROM)), eq(Timestamp.from(TO)), eq(5L)))
@@ -63,7 +63,7 @@ class FulfillmentServiceTest {
 
     @Test
     void shouldCalculateDeliveryMetricsWithoutLocationFilter() {
-        when(jdbcTemplate.queryForMap(
+        when(analyticsJdbcTemplate.queryForMap(
                 argThat(sql -> sql.contains("sa_del.to_status = 'DELIVERED'")),
                 eq(Timestamp.from(FROM)), eq(Timestamp.from(TO))))
                 .thenReturn(Map.of(
@@ -72,7 +72,7 @@ class FulfillmentServiceTest {
                         "p95_minutes", 95.0
                 ));
 
-        when(jdbcTemplate.query(
+        when(analyticsJdbcTemplate.query(
                 argThat(sql -> sql.contains("LAG(changed_at)")),
                 any(RowMapper.class),
                 eq(Timestamp.from(FROM)), eq(Timestamp.from(TO))))
@@ -88,7 +88,7 @@ class FulfillmentServiceTest {
 
     @Test
     void shouldReturnZeroWhenNoDeliveredOrders() {
-        when(jdbcTemplate.queryForMap(
+        when(analyticsJdbcTemplate.queryForMap(
                 argThat(sql -> sql.contains("sa_del.to_status = 'DELIVERED'")),
                 eq(Timestamp.from(FROM)), eq(Timestamp.from(TO))))
                 .thenReturn(Map.of(
@@ -97,7 +97,7 @@ class FulfillmentServiceTest {
                         "p95_minutes", 0.0
                 ));
 
-        when(jdbcTemplate.query(
+        when(analyticsJdbcTemplate.query(
                 argThat(sql -> sql.contains("LAG(changed_at)")),
                 any(RowMapper.class),
                 eq(Timestamp.from(FROM)), eq(Timestamp.from(TO))))
@@ -112,7 +112,7 @@ class FulfillmentServiceTest {
 
     @Test
     void shouldReturnAllStatusTransitions() {
-        when(jdbcTemplate.queryForMap(
+        when(analyticsJdbcTemplate.queryForMap(
                 argThat(sql -> sql.contains("sa_del.to_status = 'DELIVERED'")),
                 eq(Timestamp.from(FROM)), eq(Timestamp.from(TO)), eq(3L)))
                 .thenReturn(Map.of(
@@ -130,7 +130,7 @@ class FulfillmentServiceTest {
                 new FulfillmentMetricsResponse.StatusTiming("IN_DELIVERY", "DELIVERED", 15.0, 14.0, 28.0)
         );
 
-        when(jdbcTemplate.query(
+        when(analyticsJdbcTemplate.query(
                 argThat(sql -> sql.contains("LAG(changed_at)")),
                 any(RowMapper.class),
                 eq(Timestamp.from(FROM)), eq(Timestamp.from(TO)), eq(3L)))
