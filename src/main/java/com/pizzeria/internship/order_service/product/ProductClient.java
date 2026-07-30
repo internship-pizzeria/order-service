@@ -1,8 +1,10 @@
 package com.pizzeria.internship.order_service.product;
 
+import com.pizzeria.internship.order_service.user.UserContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
@@ -12,6 +14,10 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 public class ProductClient {
@@ -48,6 +54,23 @@ public class ProductClient {
         } catch (HttpClientErrorException.NotFound e) {
             throw new ProductNotFoundException(productId);
         }
+    }
+
+    public Map<Long, Product> getProductsByIds(List<Long> productIds, Long locationId) {
+        List<InternalProductDto> dtos = restClient.post()
+                .uri("/api/v1/internal/products/details?locationId={locationId}", locationId)
+                .header("LocationId", String.valueOf(locationId))
+                .header("X-User-Id", String.valueOf(UserContext.getUserId()))
+                .body(productIds)
+                .retrieve()
+                .body(new ParameterizedTypeReference<List<InternalProductDto>>() {});
+
+        if (dtos == null) {
+            return Map.of();
+        }
+
+        return dtos.stream().collect(Collectors.toMap(
+                InternalProductDto::id, InternalProductDto::toProduct));
     }
 
     @Recover

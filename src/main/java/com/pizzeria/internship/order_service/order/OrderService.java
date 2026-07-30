@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -29,7 +30,28 @@ class OrderService {
     OrderResponseDto createOrder(OrderRequestDto request) {
         validateRequest(request);
         Order order = buildOrderFromRequest(request);
-        request.items().forEach(item -> addItem(order, item.productId(), item.quantity(), request.locationId()));
+
+        List<Long> productIds = request.items().stream()
+                .map(OrderItemRequestDto::productId)
+                .toList();
+        Map<Long, Product> products = productClient.getProductsByIds(productIds, request.locationId());
+
+        for (OrderItemRequestDto item : request.items()) {
+            Product product = products.get(item.productId());
+            if (product == null || !product.isAvailable()) {
+                throw new InvalidOrderException(
+                        "Product " + item.productId() + " is currently unavailable");
+            }
+            OrderItem orderItem = OrderItem.builder()
+                    .productId(product.getId())
+                    .order(order)
+                    .quantity(item.quantity())
+                    .historicalName(product.getName())
+                    .historicalPrice(product.getPrice())
+                    .build();
+            order.addItem(orderItem);
+        }
+
         order.calculateTotalPrice();
         orderRepository.save(order);
         revenueCacheService.addOrderRevenue(order.getLocationId(), order.getTotalPrice());
@@ -135,18 +157,4 @@ class OrderService {
         return phoneNumber.replaceAll("[^\\d]", "");
     }
 
-    private void addItem(Order order, Long productId, int quantity, Long locationId) {
-        Product product = productClient.getProductById(productId, locationId);
-        if (!product.isAvailable()) {
-            throw new InvalidOrderException("Product " + product.getName() + " is currently unavailable");
-        }
-        OrderItem item = OrderItem.builder()
-                .productId(product.getId())
-                .order(order)
-                .quantity(quantity)
-                .historicalName(product.getName())
-                .historicalPrice(product.getPrice())
-                .build();
-        order.addItem(item);
-    }
 }
