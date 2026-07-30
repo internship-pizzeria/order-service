@@ -37,7 +37,7 @@ class PeakHoursReportGeneratorTest {
 
     @Test
     void shouldReturnCorrectHeader() {
-        assertEquals("hour,order_count,revenue,is_peak", generator.getHeader());
+        assertEquals("hour;order_count;revenue;is_peak", generator.getHeader());
     }
 
     @Test
@@ -54,8 +54,8 @@ class PeakHoursReportGeneratorTest {
         List<String> rows = generator.generate(request);
 
         assertEquals(2, rows.size());
-        assertEquals("8,2,40,false", rows.get(0));
-        assertEquals("12,20,400,true", rows.get(1));
+        assertEquals("8;2;40;false", rows.get(0));
+        assertEquals("12;20;400;true", rows.get(1));
     }
 
     @Test
@@ -86,6 +86,6 @@ class PeakHoursReportGeneratorTest {
         ReportRequest request = new ReportRequest(new AllLocations(), FROM, TO);
         List<String> rows = generator.generate(request);
 
-        assertEquals("8,1000,9999.99,true", rows.get(0));
+        assertEquals("8;1000;9999.99;true", rows.get(0));
     }
 }

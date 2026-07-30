@@ -67,7 +67,7 @@ class ProductPopularityReportGenerator implements ReportGenerator {
     private static String escapeCsv(Object value) {
         if (value == null) return "";
         String s = value.toString();
-        if (s.contains(",") || s.contains("\"") || s.contains("\n") || s.contains("\r")) {
+        if (s.contains(";") || s.contains("\"") || s.contains("\n") || s.contains("\r")) {
             return "\"" + s.replace("\"", "\"\"") + "\"";
         }
         return s;
