@@ -10,7 +10,8 @@ import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
+        import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -57,7 +58,7 @@ class OrderService {
         orderRepository.save(order);
         revenueCacheService.addOrderRevenue(order.getLocationId(), order.getTotalPrice());
         OrderResponseDto dto = OrderResponseDto.fromOrder(order);
-        eventPublisher.publishEvent(new OrderEvent("ORDER_NEW", order.getLocationId(), UserContext.getUserId(), dto));
+        eventPublisher.publishEvent(new OrderEvent("ORDER_NEW", order.getLocationId(), UserContext.getUserIdOrNull(), dto));
         return dto;
     }
 
@@ -158,6 +159,7 @@ class OrderService {
                 .locationId(request.locationId())
                 .status(Status.NEW)
                 .totalPrice(BigDecimal.ZERO)
+                .createdAt(Instant.now())
                 .build();
     }
 
