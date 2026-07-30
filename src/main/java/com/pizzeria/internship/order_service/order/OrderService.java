@@ -6,6 +6,7 @@ import com.pizzeria.internship.order_service.product.ProductClient;
 import com.pizzeria.internship.order_service.user.UserContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,7 +57,7 @@ class OrderService {
         orderRepository.save(order);
         revenueCacheService.addOrderRevenue(order.getLocationId(), order.getTotalPrice());
         OrderResponseDto dto = OrderResponseDto.fromOrder(order);
-        eventPublisher.publishEvent(new OrderEvent("ORDER_NEW", order.getLocationId(), dto));
+        eventPublisher.publishEvent(new OrderEvent("ORDER_NEW", order.getLocationId(), UserContext.getUserId(), dto));
         return dto;
     }
 
@@ -85,6 +86,16 @@ class OrderService {
 
     @Transactional
     OrderResponseDto updateOrderStatus(UUID orderId, UpdateStatusRequestDto request) {
+        for (int attempt = 0; ; attempt++) {
+            try {
+                return tryUpdateStatus(orderId, request);
+            } catch (OptimisticLockingFailureException e) {
+                if (attempt >= 3) throw e;
+            }
+        }
+    }
+
+    private OrderResponseDto tryUpdateStatus(UUID orderId, UpdateStatusRequestDto request) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
@@ -104,7 +115,7 @@ class OrderService {
         order.updateStatus(targetStatus);
         orderRepository.save(order);
         OrderResponseDto dto = OrderResponseDto.fromOrder(order);
-        eventPublisher.publishEvent(new OrderEvent("ORDER_STATUS_CHANGED", order.getLocationId(), dto));
+        eventPublisher.publishEvent(new OrderEvent("ORDER_STATUS_CHANGED", order.getLocationId(), UserContext.getUserId(), dto));
         return dto;
     }
 

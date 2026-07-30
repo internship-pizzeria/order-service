@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,11 +42,15 @@ public class OrderTimeoutScheduler {
 
     @Transactional
     void rejectOrder(Order order) {
-        order.reject("Order timed out - no response from location");
-        orderRepository.save(order);
-        log.info("Auto-rejected order {} for location {} - no response within {} minutes",
-                order.getId(), order.getLocationId(), timeoutMinutes);
-        OrderResponseDto dto = OrderResponseDto.fromOrder(order);
-        eventPublisher.publishEvent(new OrderEvent("ORDER_STATUS_CHANGED", order.getLocationId(), dto));
+        try {
+            order.reject("Order timed out - no response from location");
+            orderRepository.save(order);
+            log.info("Auto-rejected order {} for location {} - no response within {} minutes",
+                    order.getId(), order.getLocationId(), timeoutMinutes);
+            OrderResponseDto dto = OrderResponseDto.fromOrder(order);
+            eventPublisher.publishEvent(new OrderEvent("ORDER_STATUS_CHANGED", order.getLocationId(), null, dto));
+        } catch (OptimisticLockingFailureException e) {
+            log.info("Skipping order {} - concurrently updated by another request", order.getId());
+        }
     }
 }

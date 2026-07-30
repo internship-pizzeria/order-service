@@ -40,7 +40,7 @@ class SecurityConfig {
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             response.setContentType("application/problem+json");
                             response.getWriter().write("""
-                                    {"type":"https://api.pizzeria.com/errors/unauthorized","title":"Unauthorized","status":401,"detail":"Missing or invalid X-User-Id header"}""");
+                                    {"type":"https://api.pizzeria.com/errors/unauthorized","title":"Unauthorized","status":401,"detail":"Missing X-User-ID or LocationId header"}""");
                         })
                 );
 
