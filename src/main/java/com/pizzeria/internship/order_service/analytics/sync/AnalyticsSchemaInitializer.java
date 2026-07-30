@@ -26,6 +26,12 @@ class AnalyticsSchemaInitializer {
         try {
             String sql = new String(new ClassPathResource("analytics-schema.sql").getInputStream().readAllBytes(), StandardCharsets.UTF_8);
             analyticsJdbcTemplate.execute(sql);
+
+            analyticsJdbcTemplate.execute("""
+                    ALTER TABLE report_jobs
+                    ADD COLUMN IF NOT EXISTS file_content TEXT
+                    """);
+
             log.info("Analytics DB schema initialized successfully");
         } catch (IOException e) {
             log.error("Failed to read analytics-schema.sql: {}", e.getMessage());

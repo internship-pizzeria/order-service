@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -28,7 +29,7 @@ class AnalyticsSyncHandler {
     }
 
     @Async
-    @Transactional("analyticsTransactionManager")
+    @Transactional(value = "analyticsTransactionManager", propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = AFTER_COMMIT)
     void onOrderCreated(OrderEvent event) {
         if (!"ORDER_NEW".equals(event.eventType())) {
@@ -63,7 +64,7 @@ class AnalyticsSyncHandler {
     }
 
     @Async
-    @Transactional("analyticsTransactionManager")
+    @Transactional(value = "analyticsTransactionManager", propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = AFTER_COMMIT)
     void onOrderStatusChanged(OrderEvent event) {
         if (!"ORDER_STATUS_CHANGED".equals(event.eventType())) {
@@ -101,7 +102,7 @@ class AnalyticsSyncHandler {
     }
 
     @Async
-    @Transactional("analyticsTransactionManager")
+    @Transactional(value = "analyticsTransactionManager", propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = AFTER_COMMIT)
     void onOrderCreatedAudit(OrderEvent event) {
         if (!"ORDER_NEW".equals(event.eventType())) {

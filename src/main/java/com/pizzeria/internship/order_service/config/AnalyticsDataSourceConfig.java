@@ -57,6 +57,12 @@ public class AnalyticsDataSourceConfig {
         return new JdbcTemplate(analyticsDataSource);
     }
 
+    @Primary
+    @Bean
+    PlatformTransactionManager transactionManager(DataSource dataSource) {
+        return new DataSourceTransactionManager(dataSource);
+    }
+
     @Bean
     PlatformTransactionManager analyticsTransactionManager(
             @Qualifier("analyticsDataSource") DataSource analyticsDataSource) {
