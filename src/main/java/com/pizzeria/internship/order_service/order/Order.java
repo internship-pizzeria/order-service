@@ -1,6 +1,5 @@
 package com.pizzeria.internship.order_service.order;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -16,7 +15,11 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "Orders")
+@Table(name = "Orders", indexes = {
+        @Index(name = "idx_order_location", columnList = "location_id"),
+        @Index(name = "idx_order_location_status", columnList = "location_id, status"),
+        @Index(name = "idx_order_status_created", columnList = "status, created_at")
+})
 class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

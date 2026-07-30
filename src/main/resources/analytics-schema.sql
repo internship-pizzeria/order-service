@@ -14,6 +14,9 @@ CREATE TABLE IF NOT EXISTS report_order_items (
 CREATE INDEX IF NOT EXISTS idx_roi_location ON report_order_items(location_id);
 CREATE INDEX IF NOT EXISTS idx_roi_created ON report_order_items(created_at);
 CREATE INDEX IF NOT EXISTS idx_roi_product ON report_order_items(product_id);
+CREATE INDEX IF NOT EXISTS idx_roi_location_date ON report_order_items(location_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_roi_date_location ON report_order_items(created_at, location_id);
+CREATE INDEX IF NOT EXISTS idx_roi_order_id ON report_order_items(order_id);
 
 CREATE TABLE IF NOT EXISTS report_jobs (
     id UUID PRIMARY KEY,
@@ -23,6 +26,7 @@ CREATE TABLE IF NOT EXISTS report_jobs (
     from_time TIMESTAMP NOT NULL,
     to_time TIMESTAMP NOT NULL,
     file_path TEXT,
+    file_content TEXT,
     error_message TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     completed_at TIMESTAMP
