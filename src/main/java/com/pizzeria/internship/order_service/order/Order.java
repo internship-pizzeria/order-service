@@ -50,6 +50,9 @@ class Order {
     @CreationTimestamp
     private Instant createdAt;
 
+    @Version
+    private Long version;
+
     public void addItem(OrderItem item) {
         items.add(item);
         item.setOrder(this);

@@ -27,18 +27,37 @@ public class UserIdFilter extends OncePerRequestFilter {
         String userIdHeader = request.getHeader(USER_ID_HEADER);
         String locationIdHeader = request.getHeader(LOCATION_ID_HEADER);
 
-        if (userIdHeader != null && locationIdHeader != null) {
-            try {
-                Long userId = Long.parseLong(userIdHeader);
-                Long locationId = Long.parseLong(locationIdHeader);
+        if (userIdHeader == null) {
+            sendError(response, "Missing X-User-ID");
+            return;
+        }
 
-                UserIdAuthenticationToken authentication = new UserIdAuthenticationToken(userId, locationId);
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            } catch (NumberFormatException e) {
-                log.warn("Invalid header values: {}={}, {}={}", USER_ID_HEADER, userIdHeader, LOCATION_ID_HEADER, locationIdHeader);
-            }
+        if (locationIdHeader == null) {
+            sendError(response, "Missing locationId");
+            return;
+        }
+
+        try {
+            Long userId = Long.parseLong(userIdHeader);
+            Long locationId = Long.parseLong(locationIdHeader);
+            UserIdAuthenticationToken authentication = new UserIdAuthenticationToken(userId, locationId);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+        } catch (NumberFormatException e) {
+            log.warn("Invalid header values: {}={}, {}={}", USER_ID_HEADER, userIdHeader, LOCATION_ID_HEADER, locationIdHeader);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/problem+json");
+            response.getWriter().write("""
+                    {"type":"https://api.pizzeria.com/errors/unauthorized","title":"Unauthorized","status":401,"detail":"Invalid header values"}""");
+            return;
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private void sendError(HttpServletResponse response, String detail) throws IOException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/problem+json");
+        response.getWriter().write("""
+                {"type":"https://api.pizzeria.com/errors/unauthorized","title":"Unauthorized","status":401,"detail":"%s"}""".formatted(detail));
     }
 }
