@@ -1,5 +1,7 @@
 package com.pizzeria.internship.order_service;
 
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.info.Info;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
@@ -15,6 +17,18 @@ import javax.sql.DataSource;
 @EnableRetry
 @EnableScheduling
 @EnableSchedulerLock(defaultLockAtMostFor = "10m")
+@OpenAPIDefinition(
+        info = @Info(
+                title = "Order Service API",
+                version = "1.0",
+                description = "REST API of the Pizzera order management system. " +
+                        "Handles the full order lifecycle (creation, status tracking and validated status transitions), " +
+                        "exposes admin-only analytics (revenue summaries, product rankings, location performance, " +
+                        "peak-hours and fulfillment metrics) and provides CSV report generation. " +
+                        "Authenticated endpoints expect the 'X-User-Id' and 'LocationId' HTTP headers, which are " +
+                        "populated by the API gateway."
+        )
+)
 public class OrderServiceApplication {
 
 	public static void main(String[] args) {
