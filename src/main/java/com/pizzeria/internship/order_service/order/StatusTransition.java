@@ -5,7 +5,7 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
-class StatusTransition {
+public class StatusTransition {
 
     private static final Map<Status, Set<Status>> TRANSITIONS = new EnumMap<>(Status.class);
 
@@ -27,6 +27,26 @@ class StatusTransition {
         Set<Status> allowed = TRANSITIONS.getOrDefault(current, EnumSet.noneOf(Status.class));
         if (!allowed.contains(target)) {
             throw new InvalidStatusTransitionException(current, target);
+        }
+    }
+
+    public static boolean isValidTransition(String from, String to) {
+        Status fromStatus = parseStatus(from);
+        Status toStatus = parseStatus(to);
+        if (fromStatus == null || toStatus == null) {
+            return false;
+        }
+        return TRANSITIONS.getOrDefault(fromStatus, EnumSet.noneOf(Status.class)).contains(toStatus);
+    }
+
+    private static Status parseStatus(String value) {
+        if (value == null) {
+            return null;
+        }
+        try {
+            return Status.valueOf(value);
+        } catch (IllegalArgumentException e) {
+            return null;
         }
     }
 }

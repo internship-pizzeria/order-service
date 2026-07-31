@@ -1,5 +1,6 @@
 package com.pizzeria.internship.order_service.analytics.fulfillment;
 
+import com.pizzeria.internship.order_service.order.StatusTransition;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -149,6 +150,8 @@ public class FulfillmentService {
                     rs.getDouble("median"),
                     rs.getDouble("p95")
             );
-        }, params);
+        }, params).stream()
+                .filter(timing -> StatusTransition.isValidTransition(timing.fromStatus(), timing.toStatus()))
+                .toList();
     }
 }

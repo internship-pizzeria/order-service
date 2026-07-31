@@ -144,4 +144,37 @@ class FulfillmentServiceTest {
         assertTrue(response.averageTimePerStatus().stream()
                 .allMatch(t -> t.averageMinutes() > 0));
     }
+
+    @Test
+    void shouldFilterOutInvalidTransitions() {
+        when(analyticsJdbcTemplate.queryForMap(
+                argThat(sql -> sql.contains("sa_del.to_status = 'DELIVERED'")),
+                eq(Timestamp.from(FROM)), eq(Timestamp.from(TO))))
+                .thenReturn(Map.of(
+                        "avg_minutes", 60.0,
+                        "median_minutes", 55.0,
+                        "p95_minutes", 110.0
+                ));
+
+        List<FulfillmentMetricsResponse.StatusTiming> timings = List.of(
+                new FulfillmentMetricsResponse.StatusTiming("NEW", "ACCEPTED", 2.0, 1.5, 5.0),
+                new FulfillmentMetricsResponse.StatusTiming("NEW", "DELIVERED", 30.0, 28.0, 50.0),
+                new FulfillmentMetricsResponse.StatusTiming("ACCEPTED", "IN_PROGRESS", 8.0, 7.0, 15.0),
+                new FulfillmentMetricsResponse.StatusTiming("DELIVERED", "READY", 1.0, 0.5, 2.0)
+        );
+
+        when(analyticsJdbcTemplate.query(
+                argThat(sql -> sql.contains("LAG(changed_at)")),
+                any(RowMapper.class),
+                eq(Timestamp.from(FROM)), eq(Timestamp.from(TO))))
+                .thenReturn(timings);
+
+        FulfillmentMetricsResponse response = fulfillmentService.calculateMetrics(null, FROM, TO);
+
+        assertEquals(2, response.averageTimePerStatus().size());
+        assertEquals("NEW", response.averageTimePerStatus().get(0).fromStatus());
+        assertEquals("ACCEPTED", response.averageTimePerStatus().get(0).toStatus());
+        assertEquals("ACCEPTED", response.averageTimePerStatus().get(1).fromStatus());
+        assertEquals("IN_PROGRESS", response.averageTimePerStatus().get(1).toStatus());
+    }
 }
