@@ -3,7 +3,9 @@ package com.pizzeria.internship.order_service.order;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StatusTransitionTest {
 
@@ -146,5 +148,27 @@ class StatusTransitionTest {
             assertThrows(InvalidStatusTransitionException.class,
                     () -> StatusTransition.validateTransition(source, Status.NEW));
         }
+    }
+
+    @Test
+    void shouldReturnTrueForValidTransitions() {
+        assertTrue(StatusTransition.isValidTransition("NEW", "ACCEPTED"));
+        assertTrue(StatusTransition.isValidTransition("READY", "IN_DELIVERY"));
+        assertTrue(StatusTransition.isValidTransition("PAID", "IN_PROGRESS"));
+    }
+
+    @Test
+    void shouldReturnFalseForInvalidTransitions() {
+        assertFalse(StatusTransition.isValidTransition("NEW", "DELIVERED"));
+        assertFalse(StatusTransition.isValidTransition("DELIVERED", "READY"));
+        assertFalse(StatusTransition.isValidTransition("ACCEPTED", "NEW"));
+    }
+
+    @Test
+    void shouldReturnFalseForUnknownOrNullStatuses() {
+        assertFalse(StatusTransition.isValidTransition(null, "ACCEPTED"));
+        assertFalse(StatusTransition.isValidTransition("NEW", null));
+        assertFalse(StatusTransition.isValidTransition("UNKNOWN", "ACCEPTED"));
+        assertFalse(StatusTransition.isValidTransition("NEW", "UNKNOWN"));
     }
 }
